@@ -68,11 +68,15 @@ export class BlogsService {
   ) {
     try {
       const _id = new mongoose.Types.ObjectId(id);
-      const response = await this.blogModel.updateOne(
-        { _id },
-        { $set: { name, description, websiteUrl } },
-      );
-      return response.matchedCount === 1;
+      const blog = await this.blogModel.findOne({ _id });
+      if (blog) {
+        blog.name = name;
+        blog.description = description;
+        blog.websiteUrl = websiteUrl;
+        blog.save();
+        return true;
+      }
+      return false;
     } catch (e) {
       console.log(e);
     }
