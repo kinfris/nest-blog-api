@@ -86,24 +86,27 @@ export class PostsService {
   }
 
   async updatePost(id: string, dto: UpdatePostDto) {
-    const _id = new mongoose.Types.ObjectId(id);
-    const post = await this.postModel.findOne({ _id });
-    if (post) {
-      post.title = dto.title;
-      post.shortDescription = dto.shortDescription;
-      post.content = dto.content;
-      post.blogId = dto.blogId;
-      post.save();
-      return true;
+    try {
+      const _id = new mongoose.Types.ObjectId(id);
+      const post = await this.postModel.findOne({ _id });
+      if (post) {
+        post.title = dto.title;
+        post.shortDescription = dto.shortDescription;
+        post.content = dto.content;
+        post.blogId = dto.blogId;
+        post.save();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.log(e);
     }
-    return false;
   }
 
   async deletePost(id: string) {
     try {
       const _id = new mongoose.Types.ObjectId(id);
       const deleteResponse = await this.postModel.deleteOne({ _id });
-      console.log(deleteResponse);
       if (deleteResponse.deletedCount === 1) {
         await this.postLikesModel.deleteMany({
           postId: _id,

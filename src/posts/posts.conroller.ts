@@ -77,7 +77,7 @@ export class PostsController {
     @Param() { id }: { id: string },
     @Body() dto: UpdatePostDto,
   ) {
-    const isPostMatched = this.postsService.updatePost(id, dto);
+    const isPostMatched = await this.postsService.updatePost(id, dto);
     if (isPostMatched) {
       return;
     }
