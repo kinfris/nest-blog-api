@@ -50,7 +50,6 @@ export class PostsController {
   @Post()
   async createPost(@Body() dto: CreatePostDto) {
     const blog = await this.blogsService.findBlogById(dto.blogId);
-    console.log(blog);
     if (blog) {
       return await this.postsService.createPost(
         dto.title,
@@ -60,6 +59,7 @@ export class PostsController {
         blog.name,
       );
     }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 
   @Get('/:id')

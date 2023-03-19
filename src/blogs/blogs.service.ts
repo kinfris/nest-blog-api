@@ -18,7 +18,7 @@ export class BlogsService {
         .find()
         .where('name', { $regex: searchNameTerm, $options: 'i' })
         .sort({ [sortBy]: sortDirection === 'desc' ? -1 : 1 })
-        .skip(pageNumber * pageSize - pageSize)
+        .skip(pageNumber > 0 ? (pageNumber - 1) * pageSize : 0)
         .limit(pageSize)
         .lean();
       const blogs = blogResponse.map((blog) => new ReturnBlogModel(blog));

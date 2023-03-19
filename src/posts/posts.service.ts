@@ -25,7 +25,7 @@ export class PostsService {
     const postsResponse = await this.postModel
       .find(filter)
       .sort({ [sortBy]: sortDirection === 'desc' ? -1 : 1 })
-      .skip(pageNumber * pageSize - pageSize)
+      .skip(pageNumber > 0 ? (pageNumber - 1) * pageSize : 0)
       .limit(pageSize)
       .exec();
     const posts = await Promise.all(

@@ -25,6 +25,6 @@ export class BlogDto {
     this.description = description;
     this.websiteUrl = websiteUrl;
     this.createdAt = new Date();
-    this.isMembership = true;
+    this.isMembership = false;
   }
 }

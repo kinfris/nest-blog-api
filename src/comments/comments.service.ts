@@ -51,7 +51,7 @@ export class CommentsService {
       const commentsResponse = await this.commentModel
         .find({ postId: postObjectId })
         .sort({ [sortBy]: sortDirection === 'desc' ? -1 : 1 })
-        .skip(pageNumber * pageSize - pageSize)
+        .skip(pageNumber > 0 ? (pageNumber - 1) * pageSize : 0)
         .limit(pageSize)
         .lean();
       const comments = await Promise.all(
