@@ -35,7 +35,7 @@ export class ReturnPostModel {
   }
 }
 
-export class PostModel {
+export class PostDto {
   title: string;
   shortDescription: string;
   content: string;

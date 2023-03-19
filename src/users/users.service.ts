@@ -3,14 +3,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { User, UserDocument } from './users.schema';
 import { CreateUserDto } from './users.conroller';
-import { BcryptAdapter } from '../adapters/bcryptAdapter';
-import { ReturnUserDto } from './models/user.module';
-import { IQueryFilter } from '../models/queryFilter.model';
-import { PaginationModel } from '../models/pagination.model';
+import { BcryptAdapter } from '../providers/bcryptAdapter';
+import { ReturnUserDto } from './dto/user.dto';
+import { IQueryFilter } from '../dto/queryFilter.model';
+import { PaginationModel } from '../dto/pagination.model';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private bcryptAdapter: BcryptAdapter,
+  ) {}
 
   async createUser(dto: CreateUserDto) {
     try {
@@ -27,7 +30,7 @@ export class UsersService {
         return { error: true, message: 'User with this email already exist' };
       }
 
-      const passwordInfo = await BcryptAdapter.generateHash(dto.password);
+      const passwordInfo = await this.bcryptAdapter.generateHash(dto.password);
       const user = await this.userModel.create({
         login: dto.login,
         email: dto.email,

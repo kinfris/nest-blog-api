@@ -4,6 +4,9 @@ import {
   Delete,
   forwardRef,
   Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
   Inject,
   Param,
   Post,
@@ -11,7 +14,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { BlogsService } from './blogs.service';
-import { QueryFilterModel, QueryType } from '../models/queryFilter.model';
+import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 import { PostsService } from '../posts/posts.service';
 
 type createPostDto = {
@@ -61,9 +64,11 @@ export class BlogsController {
     if (blog) {
       return blog;
     }
+    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
   }
 
   @Put('/:id')
+  @HttpCode(204)
   async updateBlog(
     @Param() { id }: { id: string },
     @Body() dto: updateBlogDto,
@@ -77,23 +82,30 @@ export class BlogsController {
     if (isBlogFound) {
       return;
     }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 
   @Delete('/:id')
+  @HttpCode(204)
   async deleteBlog(@Param() { id }: { id: string }) {
     const isDeleted = await this.blogService.deleteBlog(id);
     if (isDeleted) {
       return;
     }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 
   @Get('/:blogId/posts')
-  getBlogPosts(
+  async getBlogPosts(
     @Param() { blogId }: { blogId: string },
     @Query() queryDto: QueryType,
   ) {
-    const queryFilters = new QueryFilterModel(queryDto);
-    return this.postsService.findPosts(queryFilters, blogId);
+    const blog = await this.blogService.findBlogById(blogId);
+    if (blog) {
+      const queryFilters = new QueryFilterModel(queryDto);
+      return this.postsService.findPosts(queryFilters, blogId);
+    }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 
   @Post('/:blogId/posts')
@@ -111,5 +123,6 @@ export class BlogsController {
         blog.name,
       );
     }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 }

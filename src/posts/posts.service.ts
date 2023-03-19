@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Post, PostDocument } from './schemas/posts.schema';
-import { PostModel, ReturnPostModel } from './models/post.model';
-import { IQueryFilter } from '../models/queryFilter.model';
-import { PaginationModel } from '../models/pagination.model';
+import { PostDto, ReturnPostModel } from './dto/post.dto';
+import { IQueryFilter } from '../dto/queryFilter.model';
+import { PaginationModel } from '../dto/pagination.model';
 import { UpdatePostDto } from './posts.conroller';
 import { PostLikes, PostLikesDocument } from './schemas/postsLikes.schema';
 
@@ -61,7 +61,7 @@ export class PostsService {
     blogId: string,
     blogName: string,
   ) {
-    const postModel = new PostModel(
+    const postModel = new PostDto(
       title,
       shortDescription,
       content,
@@ -79,6 +79,7 @@ export class PostsService {
       if (postResponse) {
         return new ReturnPostModel(postResponse);
       }
+      return null;
     } catch (e) {
       console.log(e);
     }
@@ -93,7 +94,9 @@ export class PostsService {
       post.content = dto.content;
       post.blogId = dto.blogId;
       post.save();
+      return true;
     }
+    return false;
   }
 
   async deletePost(id: string) {
@@ -105,8 +108,8 @@ export class PostsService {
         await this.postLikesModel.deleteMany({
           postId: _id,
         });
-        return true;
       }
+      return deleteResponse.deletedCount === 1;
     } catch (e) {
       console.log(e);
     }

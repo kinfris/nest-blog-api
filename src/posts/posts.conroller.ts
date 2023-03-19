@@ -4,13 +4,16 @@ import {
   Delete,
   forwardRef,
   Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
   Inject,
   Param,
   Post,
   Put,
   Query,
 } from '@nestjs/common';
-import { QueryFilterModel, QueryType } from '../models/queryFilter.model';
+import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 import { PostsService } from './posts.service';
 import { BlogsService } from '../blogs/blogs.service';
 import { CommentsService } from '../comments/comments.service';
@@ -61,28 +64,46 @@ export class PostsController {
 
   @Get('/:id')
   async findPostById(@Param() { id }: { id: string }) {
-    return this.postsService.findPostById(id);
+    const post = await this.postsService.findPostById(id);
+    if (post) {
+      return post;
+    }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 
   @Put('/:id')
+  @HttpCode(204)
   async updatePost(
     @Param() { id }: { id: string },
     @Body() dto: UpdatePostDto,
   ) {
-    return this.postsService.updatePost(id, dto);
+    const isPostMatched = this.postsService.updatePost(id, dto);
+    if (isPostMatched) {
+      return;
+    }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 
   @Delete('/:id')
+  @HttpCode(204)
   async deletePost(@Param() { id }: { id: string }) {
-    return this.postsService.deletePost(id);
+    const isDeleted = await this.postsService.deletePost(id);
+    if (isDeleted) {
+      return;
+    }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 
   @Get('/:postId/comments')
-  getPostComments(
+  async getPostComments(
     @Param() { postId }: { postId: string },
     @Query() queryDto: QueryType,
   ) {
-    const queryFilters = new QueryFilterModel(queryDto);
-    return this.commentService.findPostComments(queryFilters, postId);
+    const post = await this.postsService.findPostById(postId);
+    if (post) {
+      const queryFilters = new QueryFilterModel(queryDto);
+      return this.commentService.findPostComments(queryFilters, postId);
+    }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 }

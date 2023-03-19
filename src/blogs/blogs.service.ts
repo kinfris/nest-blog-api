@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogDocument } from './blogs.schema';
 import mongoose, { Model } from 'mongoose';
-import { BlogModel, ReturnBlogModel } from './models/blog.model';
-import { IQueryFilter } from '../models/queryFilter.model';
-import { PaginationModel } from '../models/pagination.model';
+import { BlogDto, ReturnBlogModel } from './dto/blog.dto';
+import { IQueryFilter } from '../dto/queryFilter.model';
+import { PaginationModel } from '../dto/pagination.model';
 
 @Injectable()
 export class BlogsService {
@@ -38,7 +38,7 @@ export class BlogsService {
   }
 
   async createBlog(name: string, description: string, websiteUrl: string) {
-    const newBlog = new BlogModel(name, description, websiteUrl);
+    const newBlog = new BlogDto(name, description, websiteUrl);
     try {
       const blogResponse = await this.blogModel.create(newBlog);
       return new ReturnBlogModel(blogResponse);
@@ -54,6 +54,7 @@ export class BlogsService {
       if (blogResponse) {
         return new ReturnBlogModel(blogResponse);
       }
+      return null;
     } catch (e) {
       console.log(e);
     }

@@ -3,12 +3,15 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { QueryFilterModel, QueryType } from '../models/queryFilter.model';
+import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 
 export type CreateUserDto = {
   login: string;
@@ -32,7 +35,12 @@ export class UsersController {
   }
 
   @Delete('/:id')
-  deleteUser(@Param() { id }: { id: string }) {
-    return this.usersService.deleteUser(id);
+  @HttpCode(204)
+  async deleteUser(@Param() { id }: { id: string }) {
+    const isDeleted = await this.usersService.deleteUser(id);
+    if (isDeleted) {
+      return;
+    }
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
   }
 }

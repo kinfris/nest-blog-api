@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { CommentReturnDto } from './models/comment.model';
-import { IQueryFilter } from '../models/queryFilter.model';
+import { CommentReturnDto } from './dto/comment.dto';
+import { IQueryFilter } from '../dto/queryFilter.model';
 import {
   CommentLikes,
   CommentLikesDocument,
 } from './schemas/commentLikes.schema';
 import { Comment, CommentDocument } from './schemas/comments.schema';
-import { PaginationModel } from '../models/pagination.model';
+import { PaginationModel } from '../dto/pagination.model';
 
 @Injectable()
 export class CommentsService {
@@ -34,6 +34,7 @@ export class CommentsService {
         const likeStatus = commentLike.likeStatus ?? 'None';
         return new CommentReturnDto(comment, likeStatus);
       }
+      return null;
     } catch (e) {
       console.log(e);
     }

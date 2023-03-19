@@ -14,7 +14,7 @@ export class ReturnBlogModel {
     this.isMembership = blog.isMembership;
   }
 }
-export class BlogModel {
+export class BlogDto {
   name;
   description;
   websiteUrl;
