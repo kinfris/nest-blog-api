@@ -15,12 +15,11 @@ export class BlogsService {
       const { pageNumber, pageSize, searchNameTerm, sortBy, sortDirection } =
         queryFilters;
       const blogResponse = await this.blogModel
-        .find()
-        .where('name', { $regex: searchNameTerm, $options: 'i' })
-        .sort({ [sortBy]: sortDirection === 'desc' ? -1 : 1 })
-        .skip(pageNumber > 0 ? (pageNumber - 1) * pageSize : 0)
-        .limit(pageSize)
-        .lean();
+        .find({ name: { $regex: searchNameTerm, $options: 'i' } })
+        .lean()
+        .sort({ [sortBy]: sortDirection })
+        .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+        .limit(pageSize);
       const blogs = blogResponse.map((blog) => new ReturnBlogModel(blog));
       const blogsCount = await this.blogModel
         .find()

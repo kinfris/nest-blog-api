@@ -2,8 +2,8 @@ export class QueryFilterModel {
   searchNameTerm = '';
   searchEmailTerm = '';
   searchLoginTerm = '';
-  sortBy;
-  sortDirection = 'desc';
+  sortBy = 'createdAt';
+  sortDirection: 'desc' | 'asc' = 'desc';
   pageNumber = 1;
   pageSize = 10;
 
@@ -24,7 +24,7 @@ export class QueryFilterModel {
       this.sortBy = query.sortBy;
     }
 
-    if (query.sortDirection) {
+    if (query.sortDirection === 'desc' || query.sortDirection === 'asc') {
       this.sortDirection = query.sortDirection;
     }
 
@@ -53,7 +53,7 @@ export interface IQueryFilter {
   searchEmailTerm?: string;
   searchLoginTerm?: string;
   sortBy?: string;
-  sortDirection: string;
+  sortDirection: 'desc' | 'asc';
   pageNumber: number;
   pageSize: number;
 }
