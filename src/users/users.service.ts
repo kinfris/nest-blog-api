@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { User, UserDocument } from './users.schema';
+import { User, UserDocument, UserEntityType } from './users.schema';
 import { CreateUserDto } from './users.conroller';
 import { BcryptAdapter } from '../providers/bcryptAdapter';
 import { ReturnUserDto } from './dto/user.dto';
@@ -36,7 +36,8 @@ export class UsersService {
         email: dto.email,
         passwordHash: passwordInfo.passwordHash,
         passwordSalt: passwordInfo.passwordSalt,
-      });
+        createdAt: new Date(),
+      } as UserEntityType);
       return new ReturnUserDto(user);
     } catch (e) {
       console.log(e);
@@ -59,10 +60,11 @@ export class UsersService {
           { email: { $regex: searchEmailTerm, $options: 'i' } },
         ],
       })
-      .sort({ [sortBy]: sortDirection === 'desc' ? -1 : 1 })
-      .skip(pageNumber > 0 ? (pageNumber - 1) * pageSize : 0)
+      .sort({ [sortBy]: sortDirection })
+      .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
       .limit(pageSize)
       .lean();
+    console.log({ [sortBy]: sortDirection });
     const users = usersResponse.map((user) => new ReturnUserDto(user));
     const usersCount = await this.userModel
       .find({

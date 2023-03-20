@@ -16,10 +16,10 @@ export class BlogsService {
         queryFilters;
       const blogResponse = await this.blogModel
         .find({ name: { $regex: searchNameTerm, $options: 'i' } })
-        .lean()
         .sort({ [sortBy]: sortDirection })
         .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
-        .limit(pageSize);
+        .limit(pageSize)
+        .lean();
       const blogs = blogResponse.map((blog) => new ReturnBlogModel(blog));
       const blogsCount = await this.blogModel
         .find()
