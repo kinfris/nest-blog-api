@@ -6,6 +6,8 @@ export type PostDocument = HydratedDocument<Post>;
 @Schema()
 export class Post {
   @Prop({ required: true })
+  id: string;
+  @Prop({ required: true })
   title: string;
 
   @Prop({ required: true })
@@ -22,8 +24,10 @@ export class Post {
 
   @Prop({ required: true })
   createdAt: Date;
+
   @Prop({ required: true })
   likesCount: number;
+
   @Prop({ required: true })
   dislikesCount: number;
 }

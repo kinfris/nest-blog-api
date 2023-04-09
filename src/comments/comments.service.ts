@@ -1,14 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
-import { CommentReturnDto } from './dto/comment.dto';
+import { Model } from 'mongoose';
+import { CommentDto, CommentReturnDto } from './dto/comment.dto';
 import { IQueryFilter } from '../dto/queryFilter.model';
 import {
   CommentLikes,
   CommentLikesDocument,
+  LikeStatusType,
 } from './schemas/commentLikes.schema';
 import { Comment, CommentDocument } from './schemas/comments.schema';
 import { PaginationModel } from '../dto/pagination.model';
+import { User, UserDocument } from '../users/shemas/users.schema';
+import { likesDislikesCountCalculation } from '../helpers/likesDieslikesCount';
+import { v4 } from 'uuid';
 
 @Injectable()
 export class CommentsService {
@@ -17,26 +25,21 @@ export class CommentsService {
     private commentModel: Model<CommentDocument>,
     @InjectModel(CommentLikes.name)
     private commentLikesModel: Model<CommentLikesDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
   async findCommentById(id: string, userId = '') {
-    try {
-      const _id = new mongoose.Types.ObjectId(id);
-      const comment = await this.commentModel.findOne({ _id }).lean();
-      if (comment) {
-        const userObjectId = new mongoose.Types.ObjectId(userId);
-        const commentLike = await this.commentLikesModel
-          .findOne({
-            commentId: _id,
-            userId: userObjectId,
-          })
-          .lean();
-        const likeStatus = commentLike.likeStatus ?? 'None';
-        return new CommentReturnDto(comment, likeStatus);
+    const comment = await this.commentModel.findOne({ id }).lean();
+    if (comment) {
+      let commentLike: any = {};
+      if (userId) {
+        commentLike = await this.commentLikesModel.findOne({
+          commentId: id,
+          userId,
+        });
       }
-      return null;
-    } catch (e) {
-      console.log(e);
+      const likeStatus = commentLike?.likeStatus ?? 'None';
+      return new CommentReturnDto(comment, likeStatus);
     }
   }
 
@@ -45,38 +48,111 @@ export class CommentsService {
     postId: string,
     userId = '',
   ) {
+    const { pageNumber, pageSize, sortBy, sortDirection } = queryFilters;
+    const commentsResponse = await this.commentModel
+      .find({ postId })
+      .sort({ [sortBy]: sortDirection === 'desc' ? -1 : 1 })
+      .skip(pageNumber > 0 ? (pageNumber - 1) * pageSize : 0)
+      .limit(pageSize)
+      .lean();
+    const comments = await Promise.all(
+      commentsResponse.map(async (comment) => {
+        const commentLike = await this.commentLikesModel
+          .findOne({
+            userId: userId,
+            commentId: comment.id,
+          })
+          .lean();
+        const likeStatus = commentLike.likeStatus ?? 'None';
+        return new CommentReturnDto(comment, likeStatus);
+      }),
+    );
+    const countPostComments = await this.commentModel
+      .find({ postId })
+      .countDocuments();
+    const paginationInfo = new PaginationModel(
+      pageNumber,
+      pageSize,
+      countPostComments,
+    );
+    return { ...paginationInfo, items: comments };
+  }
+
+  async updateComment(id: string, newContent: string) {
     try {
-      const { pageNumber, pageSize, sortBy, sortDirection } = queryFilters;
-      const postObjectId = new mongoose.Types.ObjectId(postId);
-      const commentsResponse = await this.commentModel
-        .find({ postId: postObjectId })
-        .sort({ [sortBy]: sortDirection === 'desc' ? -1 : 1 })
-        .skip(pageNumber > 0 ? (pageNumber - 1) * pageSize : 0)
-        .limit(pageSize)
-        .lean();
-      const comments = await Promise.all(
-        commentsResponse.map(async (comment) => {
-          const commentLike = await this.commentLikesModel
-            .findOne({
-              userId: userId,
-              commentId: comment._id,
-            })
-            .lean();
-          const likeStatus = commentLike.likeStatus ?? 'None';
-          return new CommentReturnDto(comment, likeStatus);
-        }),
-      );
-      const countPostComments = await this.commentModel
-        .find({ postId: postObjectId })
-        .countDocuments();
-      const paginationInfo = new PaginationModel(
-        pageNumber,
-        pageSize,
-        countPostComments,
-      );
-      return { ...paginationInfo, items: comments };
+      const comment = await this.commentModel.findOne({ id });
+      if (comment) {
+        comment.content = newContent;
+        comment.save();
+        return;
+      }
     } catch (e) {
-      console.log(e);
+      throw new NotFoundException('Not Found');
     }
+  }
+
+  async createComment(postId: string, content: string, userId: string) {
+    try {
+      const user = await this.userModel.findOne({ id: userId }).lean();
+      const commentDto = new CommentDto(postId, content, userId, user.login);
+      const newComment = await this.commentModel.create(commentDto);
+      return new CommentReturnDto(newComment, 'None');
+    } catch (e) {
+      throw new NotFoundException('Not Found');
+    }
+  }
+
+  async changeLikeStatus(
+    commentId: string,
+    likeStatus: LikeStatusType,
+    userId,
+  ) {
+    const userCommentLike = await this.commentLikesModel.findOne({
+      userId,
+      commentId,
+    });
+    const comment = await this.commentModel.findOne({ id: commentId });
+    if (!comment) throw new NotFoundException('Not Found');
+    if (!userCommentLike) {
+      const newUserCommentLikeEntity = {
+        id: v4(),
+        commentId: commentId,
+        addedAt: new Date(),
+        userId: userId,
+        likeStatus,
+        postId: comment.postId,
+      };
+      await this.commentLikesModel.create(newUserCommentLikeEntity);
+      if (likeStatus === 'Dislike') {
+        comment.dislikesCount += 1;
+      } else {
+        comment.likesCount += likeStatus === 'Like' ? 1 : 0;
+      }
+      comment.save();
+      return;
+    }
+
+    const likeOrDislikeCount = likesDislikesCountCalculation(
+      likeStatus,
+      userCommentLike.likeStatus,
+    );
+
+    userCommentLike.likeStatus = likeStatus;
+    userCommentLike.save();
+
+    comment.dislikesCount += likeOrDislikeCount.dislike;
+    comment.likesCount += likeOrDislikeCount.like;
+    comment.save();
+    return;
+  }
+
+  async deleteComment(id: string, userId: string) {
+    const result = await this.commentModel.findOne({ id });
+    if (result.userId !== userId)
+      throw new ForbiddenException('Don`t have permission for this');
+    if (result) throw new NotFoundException('Not found');
+    await this.commentLikesModel.deleteMany({ commentId: id });
+    await this.commentModel.deleteOne({ id });
+    return;
   }
 }

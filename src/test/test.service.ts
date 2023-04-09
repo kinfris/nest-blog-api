@@ -11,8 +11,8 @@ import {
   CommentLikes,
   CommentLikesDocument,
 } from '../comments/schemas/commentLikes.schema';
-import { Blog, BlogDocument } from '../blogs/blogs.schema';
-import { User, UserDocument } from '../users/users.schema';
+import { Blog, BlogDocument } from '../blogs/shemas/blogs.schema';
+import { User, UserDocument } from '../users/shemas/users.schema';
 
 @Injectable()
 export class TestService {

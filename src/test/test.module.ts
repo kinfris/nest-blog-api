@@ -9,8 +9,8 @@ import {
   CommentLikes,
   CommentLikesSchema,
 } from '../comments/schemas/commentLikes.schema';
-import { Blog, BlogSchema } from '../blogs/blogs.schema';
-import { User, UserSchema } from '../users/users.schema';
+import { Blog, BlogSchema } from '../blogs/shemas/blogs.schema';
+import { User, UserSchema } from '../users/shemas/users.schema';
 
 @Module({
   imports: [

@@ -4,14 +4,14 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpException,
-  HttpStatus,
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
+import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 
 export type CreateUserDto = {
   login: string;
@@ -23,24 +23,24 @@ export type CreateUserDto = {
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @UseGuards(BasicAuthGuard)
   @Post()
-  createUser(@Body() dto: CreateUserDto) {
-    return this.usersService.createUser(dto);
+  async createUser(@Body() dto: CreateUserDto) {
+    const { user } = await this.usersService.createUser(dto);
+    return user;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Get()
   findUsers(@Query() queryDto: QueryType) {
     const queryFilters = new QueryFilterModel(queryDto);
     return this.usersService.findUsers(queryFilters);
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete('/:id')
   @HttpCode(204)
   async deleteUser(@Param() { id }: { id: string }) {
-    const isDeleted = await this.usersService.deleteUser(id);
-    if (isDeleted) {
-      return;
-    }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    await this.usersService.deleteUser(id);
   }
 }

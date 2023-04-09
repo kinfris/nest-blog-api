@@ -6,7 +6,13 @@ export type CommentLikesDocument = HydratedDocument<CommentLikes>;
 @Schema()
 export class CommentLikes {
   @Prop({ required: true })
+  id: string;
+
+  @Prop({ required: true })
   commentId: string;
+
+  @Prop({ required: true })
+  postId: string;
 
   @Prop({ required: true })
   addedAt: Date;
@@ -15,7 +21,7 @@ export class CommentLikes {
   userId: string;
 
   @Prop({ required: true })
-  likeStatus: LikeStatusTYpe;
+  likeStatus: LikeStatusType;
 }
 
 export const CommentLikesSchema = SchemaFactory.createForClass(CommentLikes);
@@ -24,7 +30,7 @@ export type CommentLikesInfo = {
   commentId: string;
   addedAt: Date;
   userId: string;
-  likeStatus: LikeStatusTYpe;
+  likeStatus: LikeStatusType;
 };
 
-type LikeStatusTYpe = 'None' | 'Like' | 'Dislike';
+export type LikeStatusType = 'None' | 'Like' | 'Dislike';

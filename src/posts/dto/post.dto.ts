@@ -1,4 +1,5 @@
 import { PostLikeStatusType } from '../schemas/postsLikes.schema';
+import { v4 } from 'uuid';
 
 export class ReturnPostModel {
   id;
@@ -10,32 +11,35 @@ export class ReturnPostModel {
   createdAt: Date;
   extendedLikesInfo: ExtendedLikesInfoType;
 
-  constructor(postInfo) {
-    this.id = postInfo._id;
+  constructor(postInfo, postLikes) {
+    this.id = postInfo.id;
     this.title = postInfo.title;
     this.shortDescription = postInfo.shortDescription;
     this.content = postInfo.content;
     this.blogId = postInfo.blogId;
     this.blogName = postInfo.blogName;
     this.createdAt = postInfo.createdAt;
-    let newestLikes = [];
     let userStatus: PostLikeStatusType;
-    if (postInfo.postLikes) {
-      userStatus = postInfo.postLikes.find(
+    if (postLikes.length > 0) {
+      userStatus = postLikes.find(
         (postLike) => postInfo.userId === postLike.userId,
       );
-      newestLikes = postInfo.postLikes.reverse().splice(0, 3);
     }
     this.extendedLikesInfo = {
       likesCount: postInfo.likesCount,
       dislikesCount: postInfo.dislikesCount,
       myStatus: userStatus?.likeStatus ?? 'None',
-      newestLikes,
+      newestLikes: postLikes.map((m) => ({
+        addedAt: m.addedAt,
+        userId: m.userId,
+        login: m.userLogin,
+      })),
     };
   }
 }
 
 export class PostDto {
+  id = v4();
   title: string;
   shortDescription: string;
   content: string;

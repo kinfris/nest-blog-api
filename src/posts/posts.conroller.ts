@@ -5,18 +5,23 @@ import {
   forwardRef,
   Get,
   HttpCode,
-  HttpException,
-  HttpStatus,
   Inject,
+  NotFoundException,
   Param,
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 import { PostsService } from './posts.service';
 import { BlogsService } from '../blogs/blogs.service';
 import { CommentsService } from '../comments/comments.service';
+import { UpdateDto } from '../comments/comments.conroller';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../decorators/current-user.param.decorator';
+import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
+import { IsIn, IsString } from 'class-validator';
 
 type CreatePostDto = {
   title: string;
@@ -31,6 +36,12 @@ export type UpdatePostDto = {
   content: 'string';
   blogId: 'string';
 };
+
+export class LikeStatusDto {
+  @IsString()
+  @IsIn(['None', 'Like', 'Dislike'])
+  likeStatus: 'None' | 'Like' | 'Dislike';
+}
 
 @Controller('posts')
 export class PostsController {
@@ -59,16 +70,12 @@ export class PostsController {
         blog.name,
       );
     }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    throw new NotFoundException('Not Found');
   }
 
   @Get('/:id')
   async findPostById(@Param() { id }: { id: string }) {
-    const post = await this.postsService.findPostById(id);
-    if (post) {
-      return post;
-    }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    return await this.postsService.findPostById(id);
   }
 
   @Put('/:id')
@@ -77,21 +84,16 @@ export class PostsController {
     @Param() { id }: { id: string },
     @Body() dto: UpdatePostDto,
   ) {
-    const isPostMatched = await this.postsService.updatePost(id, dto);
-    if (isPostMatched) {
-      return;
-    }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    await this.postsService.updatePost(id, dto);
+    return;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete('/:id')
   @HttpCode(204)
   async deletePost(@Param() { id }: { id: string }) {
-    const isDeleted = await this.postsService.deletePost(id);
-    if (isDeleted) {
-      return;
-    }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    await this.postsService.deletePost(id);
+    return;
   }
 
   @Get('/:postId/comments')
@@ -104,6 +106,36 @@ export class PostsController {
       const queryFilters = new QueryFilterModel(queryDto);
       return this.commentService.findPostComments(queryFilters, postId);
     }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    throw new NotFoundException();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/:postId/comments')
+  async createComment(
+    @Param() { postId }: { postId: string },
+    @Body() dto: UpdateDto,
+    @CurrentUser() currentUser,
+  ) {
+    return await this.commentService.createComment(
+      postId,
+      dto.content,
+      currentUser.userId,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/:postId/like-status')
+  @HttpCode(204)
+  async updatePostLikeStatus(
+    @Param() { postId }: { postId: string },
+    @Body() likeStatusDto: LikeStatusDto,
+    @CurrentUser() currentUser,
+  ) {
+    await this.postsService.updatePostLikeStatus(
+      postId,
+      currentUser.userId,
+      likeStatusDto.likeStatus,
+    );
+    return;
   }
 }

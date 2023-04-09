@@ -1,15 +1,14 @@
-import { ObjectId } from 'mongoose';
-import { IComment } from '../schemas/comments.schema';
+import { v4 } from 'uuid';
 
 export class CommentReturnDto {
-  id: ObjectId;
+  id: string;
   content: string;
-  commentatorInfo: { userId: ObjectId; userLogin: string };
+  commentatorInfo: { userId: string; userLogin: string };
   createdAt: Date;
   likesInfo: LikesInfoType;
 
-  constructor(comment: IComment, likeStatus: LikeStatusType) {
-    this.id = comment._id;
+  constructor(comment, likeStatus: LikeStatusType) {
+    this.id = comment.id;
     this.content = comment.content;
     this.commentatorInfo = {
       userId: comment.userId,
@@ -26,28 +25,25 @@ export class CommentReturnDto {
 
 //Still no use
 export class CommentDto {
-  title: string;
-  shortDescription: string;
+  id = v4();
+  postId: string;
   content: string;
-  blogId: string;
-  blogName: string;
-  createdAt: Date;
+  userId: string;
+  userLogin: string;
+  createdAt = new Date();
   likesCount = 0;
   dislikesCount = 0;
 
   constructor(
-    title: string,
-    shortDescription: string,
+    postId: string,
     content: string,
-    blogId: string,
-    blogName: string,
+    userId: string,
+    userLogin: string,
   ) {
-    this.title = title;
-    this.shortDescription = shortDescription;
+    this.postId = postId;
     this.content = content;
-    this.blogId = blogId;
-    this.blogName = blogName;
-    this.createdAt = new Date();
+    this.userId = userId;
+    this.userLogin = userLogin;
   }
 }
 

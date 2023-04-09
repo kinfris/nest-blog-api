@@ -16,24 +16,26 @@ import {
 import { BlogsService } from './blogs.service';
 import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 import { PostsService } from '../posts/posts.service';
+import { Matches, MaxLength } from 'class-validator';
 
-type createPostDto = {
+class BlogDto {
+  @MaxLength(15)
   name: string;
+  @MaxLength(500)
   description: string;
+  @MaxLength(100)
+  @Matches('^https://([a-zA-Z0-9_-]+.)+[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*/?$')
   websiteUrl: string;
-};
+}
 
-type updateBlogDto = {
-  name: string;
-  description: string;
-  websiteUrl: string;
-};
-
-type CreatePostDto = {
+class CreatePostDto {
+  @MaxLength(30)
   title: string;
+  @MaxLength(100)
   shortDescription: string;
+  @MaxLength(1000)
   content: string;
-};
+}
 
 @Controller('blogs')
 export class BlogsController {
@@ -50,7 +52,7 @@ export class BlogsController {
   }
 
   @Post()
-  createBlog(@Body() dto: createPostDto) {
+  createBlog(@Body() dto: BlogDto) {
     return this.blogService.createBlog(
       dto.name,
       dto.description,
@@ -69,30 +71,21 @@ export class BlogsController {
 
   @Put('/:id')
   @HttpCode(204)
-  async updateBlog(
-    @Param() { id }: { id: string },
-    @Body() dto: updateBlogDto,
-  ) {
-    const isBlogFound = await this.blogService.updateBlog(
+  async updateBlog(@Param() { id }: { id: string }, @Body() dto: BlogDto) {
+    await this.blogService.updateBlog(
       id,
       dto.name,
       dto.description,
       dto.websiteUrl,
     );
-    if (isBlogFound) {
-      return;
-    }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    return;
   }
 
   @Delete('/:id')
   @HttpCode(204)
   async deleteBlog(@Param() { id }: { id: string }) {
-    const isDeleted = await this.blogService.deleteBlog(id);
-    if (isDeleted) {
-      return;
-    }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    await this.blogService.deleteBlog(id);
+    return;
   }
 
   @Get('/:blogId/posts')
@@ -100,12 +93,10 @@ export class BlogsController {
     @Param() { blogId }: { blogId: string },
     @Query() queryDto: QueryType,
   ) {
-    const blog = await this.blogService.findBlogById(blogId);
-    if (blog) {
-      const queryFilters = new QueryFilterModel(queryDto);
-      return this.postsService.findPosts(queryFilters, blogId);
-    }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    await this.blogService.findBlogById(blogId);
+
+    const queryFilters = new QueryFilterModel(queryDto);
+    return this.postsService.findPosts(queryFilters, blogId);
   }
 
   @Post('/:blogId/posts')
@@ -114,15 +105,12 @@ export class BlogsController {
     @Body() dto: CreatePostDto,
   ) {
     const blog = await this.blogService.findBlogById(blogId);
-    if (blog) {
-      return await this.postsService.createPost(
-        dto.title,
-        dto.shortDescription,
-        dto.content,
-        blogId,
-        blog.name,
-      );
-    }
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    return await this.postsService.createPost(
+      dto.title,
+      dto.shortDescription,
+      dto.content,
+      blogId,
+      blog.name,
+    );
   }
 }

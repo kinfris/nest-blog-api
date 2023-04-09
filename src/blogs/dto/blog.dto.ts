@@ -1,3 +1,5 @@
+import { v4 } from 'uuid';
+
 export class ReturnBlogModel {
   id;
   name;
@@ -5,8 +7,9 @@ export class ReturnBlogModel {
   websiteUrl;
   createdAt;
   isMembership;
+
   constructor(blog) {
-    this.id = blog._id;
+    this.id = blog.id;
     this.name = blog.name;
     this.description = blog.description;
     this.websiteUrl = blog.websiteUrl;
@@ -14,12 +17,15 @@ export class ReturnBlogModel {
     this.isMembership = blog.isMembership;
   }
 }
+
 export class BlogDto {
-  name;
-  description;
-  websiteUrl;
-  createdAt;
-  isMembership;
+  id = v4();
+  name: string;
+  description: string;
+  websiteUrl: string;
+  createdAt: Date;
+  isMembership: boolean;
+
   constructor(name: string, description: string, websiteUrl: string) {
     this.name = name;
     this.description = description;

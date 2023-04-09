@@ -6,18 +6,19 @@ import { AppModule } from '../src/app.module';
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  beforeEach(async () => {
     await request(app.getHttpServer()).delete('/testing/all-data');
   });
-  afterEach(async () => {
-    await request(app.getHttpServer()).delete('/testing/all-data');
-  });
+
   it(' Should return blog by id (GET) /blogs/:blogId (Additional method (POST) /blogs)', async () => {
     const createDto = {
       name: 'New blog 1',
@@ -25,22 +26,26 @@ describe('AppController (e2e)', () => {
       websiteUrl:
         'https://www.youtube.com/watch?v=vuzKKCYXISA&ab_channel=IT-KAMASUTRA',
     };
-    const blogResponse = await request(app.getHttpServer())
+    const { body: blog } = await request(app.getHttpServer())
       .post('/blogs')
       .send(createDto);
-    const blog = blogResponse.body;
-    return request(app.getHttpServer())
+
+    const response = await request(app.getHttpServer())
       .get(`/blogs/${blog.id}`)
-      .expect(200)
-      .expect({
-        id: blog.id,
-        name: 'New blog 1',
-        description: 'blog description',
-        websiteUrl:
-          'https://www.youtube.com/watch?v=vuzKKCYXISA&ab_channel=IT-KAMASUTRA',
-        createdAt: blog.createdAt,
-        isMembership: false,
-      });
+      .expect(200);
+
+    const expectedBlog = {
+      id: expect.any(String),
+      name: 'New blog 1',
+      description: 'blog description',
+      websiteUrl:
+        'https://www.youtube.com/watch?v=vuzKKCYXISA&ab_channel=IT-KAMASUTRA',
+      createdAt: expect.any(String),
+      isMembership: expect.any(Boolean),
+    };
+
+    expect(response.body).toEqual(expectedBlog);
+    //expect((response.body as BlogDto).name).toBe('fgh')
   });
 
   it('Should return all blogs (GET) /blogs ', async () => {

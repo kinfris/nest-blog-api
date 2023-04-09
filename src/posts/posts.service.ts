@@ -1,12 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Post, PostDocument } from './schemas/posts.schema';
 import { PostDto, ReturnPostModel } from './dto/post.dto';
 import { IQueryFilter } from '../dto/queryFilter.model';
 import { PaginationModel } from '../dto/pagination.model';
 import { UpdatePostDto } from './posts.conroller';
 import { PostLikes, PostLikesDocument } from './schemas/postsLikes.schema';
+import { Comment, CommentDocument } from '../comments/schemas/comments.schema';
+import {
+  CommentLikes,
+  CommentLikesDocument,
+} from '../comments/schemas/commentLikes.schema';
+import { likesDislikesCountCalculation } from '../helpers/likesDieslikesCount';
+import { v4 } from 'uuid';
+import { User, UserDocument } from '../users/shemas/users.schema';
 
 @Injectable()
 export class PostsService {
@@ -14,6 +22,11 @@ export class PostsService {
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
     @InjectModel(PostLikes.name)
     private postLikesModel: Model<PostLikesDocument>,
+    @InjectModel(Comment.name)
+    private commentModel: Model<CommentDocument>,
+    @InjectModel(CommentLikes.name)
+    private commentLikesModel: Model<CommentLikesDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
   async findPosts(queryFilters: IQueryFilter, blogId?: string) {
@@ -30,19 +43,24 @@ export class PostsService {
       .exec();
     const posts = await Promise.all(
       postsResponse.map(async (post) => {
-        const postLikes = await this.postLikesModel.find({ postId: post._id });
-        return new ReturnPostModel({
-          _id: post._id,
-          title: post.title,
-          shortDescription: post.shortDescription,
-          content: post.content,
-          blogId: post.blogId,
-          blogName: post.blogName,
-          createdAt: post.createdAt,
-          likesCount: post.likesCount,
-          dislikesCount: post.dislikesCount,
+        const postLikes = await this.postLikesModel
+          .find({ postId: post.id })
+          .sort({ _id: -1 })
+          .limit(3);
+        return new ReturnPostModel(
+          {
+            id: post.id,
+            title: post.title,
+            shortDescription: post.shortDescription,
+            content: post.content,
+            blogId: post.blogId,
+            blogName: post.blogName,
+            createdAt: post.createdAt,
+            likesCount: post.likesCount,
+            dislikesCount: post.dislikesCount,
+          },
           postLikes,
-        });
+        );
       }),
     );
     const postsCount = await this.postModel.find(filter).countDocuments();
@@ -69,52 +87,93 @@ export class PostsService {
       blogName,
     );
     const postResponse = await this.postModel.create(postModel);
-    return new ReturnPostModel(postResponse);
+    return new ReturnPostModel(postResponse, []);
   }
 
   async findPostById(id: string) {
-    try {
-      const _id = new mongoose.Types.ObjectId(id);
-      const postResponse = await this.postModel.findOne({ _id });
-      if (postResponse) {
-        return new ReturnPostModel(postResponse);
-      }
-      return null;
-    } catch (e) {
-      console.log(e);
+    const postResponse = await this.postModel.findOne({ id });
+    if (postResponse) {
+      const postLikes = await this.postLikesModel
+        .find({ postId: id })
+        .sort({ _id: -1 })
+        .limit(3)
+        .lean();
+      return new ReturnPostModel(postResponse, postLikes);
     }
+    throw new NotFoundException('Not found');
   }
 
   async updatePost(id: string, dto: UpdatePostDto) {
-    try {
-      const _id = new mongoose.Types.ObjectId(id);
-      const post = await this.postModel.findOne({ _id });
-      if (post) {
-        post.title = dto.title;
-        post.shortDescription = dto.shortDescription;
-        post.content = dto.content;
-        post.blogId = dto.blogId;
-        post.save();
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.log(e);
+    const post = await this.postModel.findOne({ id });
+    if (post) {
+      post.title = dto.title;
+      post.shortDescription = dto.shortDescription;
+      post.content = dto.content;
+      post.blogId = dto.blogId;
+      post.save();
+      return;
     }
+    throw new NotFoundException('Not Found');
   }
 
   async deletePost(id: string) {
-    try {
-      const _id = new mongoose.Types.ObjectId(id);
-      const deleteResponse = await this.postModel.deleteOne({ _id });
-      if (deleteResponse.deletedCount === 1) {
-        await this.postLikesModel.deleteMany({
-          postId: _id,
-        });
-      }
-      return deleteResponse.deletedCount === 1;
-    } catch (e) {
-      console.log(e);
+    const deleteResponse = await this.postModel.deleteOne({ id });
+    if (deleteResponse.deletedCount !== 1) {
+      throw new NotFoundException('Not found');
     }
+
+    await this.postLikesModel.deleteMany({
+      postId: id,
+    });
+    await this.commentModel.deleteMany({ postId: id });
+    await this.commentLikesModel.deleteMany({ postId: id });
+
+    return;
+  }
+
+  async updatePostLikeStatus(
+    postId: string,
+    userId,
+    likeStatus: 'None' | 'Like' | 'Dislike',
+  ) {
+    const postUserLike = await this.postLikesModel.findOne({
+      postId,
+      userId,
+    });
+    const post = await this.postModel.findOne({ id: postId });
+    if (!post) throw new NotFoundException('Not found');
+    if (!postUserLike) {
+      const user = await this.userModel.findOne({ id: userId });
+      const newUserPostLikeEntity = {
+        id: v4(),
+        postId: postId,
+        addedAt: new Date(),
+        userId,
+        userLogin: user.login,
+        blogId: post.blogId,
+        likeStatus,
+      };
+      await this.postLikesModel.create(newUserPostLikeEntity);
+      if (likeStatus === 'Dislike') {
+        post.dislikesCount += 1;
+      } else {
+        post.likesCount += likeStatus === 'Like' ? 1 : 0;
+      }
+      post.save();
+      return;
+    }
+    const likeOrDislikeCount = likesDislikesCountCalculation(
+      likeStatus,
+      postUserLike.likeStatus,
+    );
+
+    postUserLike.likeStatus = likeStatus;
+    postUserLike.save();
+
+    post.dislikesCount += likeOrDislikeCount.dislike;
+    post.likesCount += likeOrDislikeCount.like;
+    post.save();
+
+    return;
   }
 }

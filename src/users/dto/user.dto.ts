@@ -5,7 +5,7 @@ export class ReturnUserDto {
   createdAt: Date;
 
   constructor(user) {
-    this.id = user._id;
+    this.id = user.id;
     this.login = user.login;
     this.email = user.email;
     this.createdAt = user.createdAt;

@@ -7,6 +7,7 @@ import {
   CommentLikes,
   CommentLikesSchema,
 } from './schemas/commentLikes.schema';
+import { User, UserSchema } from '../users/shemas/users.schema';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import {
     MongooseModule.forFeature([
       { name: CommentLikes.name, schema: CommentLikesSchema },
     ]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [CommentsController],
   providers: [CommentsService],

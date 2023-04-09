@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogDocument } from './blogs.schema';
-import mongoose, { Model } from 'mongoose';
+import { Blog, BlogDocument } from './shemas/blogs.schema';
+import { Model } from 'mongoose';
 import { BlogDto, ReturnBlogModel } from './dto/blog.dto';
 import { IQueryFilter } from '../dto/queryFilter.model';
 import { PaginationModel } from '../dto/pagination.model';
@@ -38,25 +38,16 @@ export class BlogsService {
 
   async createBlog(name: string, description: string, websiteUrl: string) {
     const newBlog = new BlogDto(name, description, websiteUrl);
-    try {
-      const blogResponse = await this.blogModel.create(newBlog);
-      return new ReturnBlogModel(blogResponse);
-    } catch (e) {
-      console.log(e);
-    }
+    const blogResponse = await this.blogModel.create(newBlog);
+    return new ReturnBlogModel(blogResponse);
   }
 
   async findBlogById(id: string) {
-    try {
-      const _id = new mongoose.Types.ObjectId(id);
-      const blogResponse = await this.blogModel.findOne({ _id });
-      if (blogResponse) {
-        return new ReturnBlogModel(blogResponse);
-      }
-      return null;
-    } catch (e) {
-      console.log(e);
+    const blogResponse = await this.blogModel.findOne({ id });
+    if (blogResponse) {
+      return new ReturnBlogModel(blogResponse);
     }
+    throw new NotFoundException('Not found');
   }
 
   async updateBlog(
@@ -65,29 +56,20 @@ export class BlogsService {
     description: string,
     websiteUrl: string,
   ) {
-    try {
-      const _id = new mongoose.Types.ObjectId(id);
-      const blog = await this.blogModel.findOne({ _id });
-      if (blog) {
-        blog.name = name;
-        blog.description = description;
-        blog.websiteUrl = websiteUrl;
-        blog.save();
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.log(e);
+    const blog = await this.blogModel.findOne({ id });
+    if (blog) {
+      blog.name = name;
+      blog.description = description;
+      blog.websiteUrl = websiteUrl;
+      blog.save();
+      return;
     }
+    throw new NotFoundException('Not found');
   }
 
   async deleteBlog(id: string) {
-    try {
-      const _id = new mongoose.Types.ObjectId(id);
-      const response = await this.blogModel.deleteOne({ _id });
-      return response.deletedCount === 1;
-    } catch (e) {
-      console.log(e);
-    }
+    const response = await this.blogModel.deleteOne({ id });
+    if (response.deletedCount !== 1) throw new NotFoundException('Not found');
+    return;
   }
 }
