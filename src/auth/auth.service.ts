@@ -8,7 +8,7 @@ import { UsersService } from '../users/users.service';
 import { BcryptAdapter } from '../providers/bcryptAdapter';
 import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
-import * as process from 'process';
+import process from 'process';
 import { InjectModel } from '@nestjs/mongoose';
 import { Email, EmailDocument } from '../email/schemas/email.schema';
 import { EmailService } from '../email/email.service';
