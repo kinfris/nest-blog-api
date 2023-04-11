@@ -12,14 +12,16 @@ import {
 import { UsersService } from './users.service';
 import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
-import { IsNotEmpty } from 'class-validator';
+import { IsEmail, MaxLength, MinLength } from 'class-validator';
 
 export class CreateUserDto {
-  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(10)
   login: string;
-  @IsNotEmpty()
+  @MinLength(6)
+  @MaxLength(20)
   password: string;
-  @IsNotEmpty()
+  @IsEmail()
   email: string;
 }
 

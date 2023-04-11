@@ -36,10 +36,15 @@ export class AuthService {
   ) {}
 
   async registration(login: string, password: string, email: string) {
-    const { user } = await this.usersService.createUser(
+    const { user, emailInfo } = await this.usersService.createUser(
       { login, email, password },
       false,
     );
+    await this.emailService.sendConfirmation(
+      emailInfo.email,
+      emailInfo.confirmationCode,
+    );
+
     return user;
   }
 
