@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { IsEmail, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
-import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.param.decorator';
@@ -25,9 +24,12 @@ class LoginDto {
 }
 
 class RegistrationDto {
-  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(10)
   login: 'string';
   @IsNotEmpty()
+  @MinLength(6)
+  @MaxLength(20)
   password: 'string';
   @IsEmail()
   email: 'string';
@@ -65,7 +67,7 @@ export class AuthController {
     return;
   }
 
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(204)
   @Post('registration-confirmation')
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
@@ -92,12 +94,10 @@ export class AuthController {
     );
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('login')
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
   async login(
-    @CurrentUser() currentUser,
     @Body() dto: LoginDto,
     @Res() response: Response,
     @Req() req: Request,
@@ -105,7 +105,8 @@ export class AuthController {
     const { ip } = req;
     const userAgent = req.headers['user-agent'];
     const tokens = await this.authService.login(
-      currentUser.userId,
+      dto.loginOrEmail,
+      dto.password,
       ip,
       userAgent,
     );
@@ -117,7 +118,7 @@ export class AuthController {
     return;
   }
 
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(204)
   @Post('registration-email-resending')
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)

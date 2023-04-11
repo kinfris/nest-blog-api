@@ -12,12 +12,16 @@ import {
 import { UsersService } from './users.service';
 import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
+import { IsNotEmpty } from 'class-validator';
 
-export type CreateUserDto = {
+export class CreateUserDto {
+  @IsNotEmpty()
   login: string;
+  @IsNotEmpty()
   password: string;
+  @IsNotEmpty()
   email: string;
-};
+}
 
 @Controller('users')
 export class UsersController {

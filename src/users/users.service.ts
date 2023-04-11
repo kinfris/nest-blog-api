@@ -47,7 +47,10 @@ export class UsersService {
 
     if (isUserWithThisLoginOrEmailExist) {
       throw new BadRequestException([
-        `User with this ${isUserWithThisLoginOrEmailExist.matchedField} already exist`,
+        {
+          field: isUserWithThisLoginOrEmailExist.matchedField,
+          message: `User with this ${isUserWithThisLoginOrEmailExist.matchedField} already exist`,
+        },
       ]);
     }
 

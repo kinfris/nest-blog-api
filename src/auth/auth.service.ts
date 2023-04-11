@@ -36,24 +36,24 @@ export class AuthService {
   ) {}
 
   async registration(login: string, password: string, email: string) {
-    const { user, emailInfo } = await this.usersService.createUser(
+    const { user } = await this.usersService.createUser(
       { login, email, password },
       false,
-    );
-    await this.emailService.sendConfirmation(
-      emailInfo.email,
-      emailInfo.confirmationCode,
     );
     return user;
   }
 
-  async login(userId: string, ip: string, userAgent: string) {
+  async login(loginOrEmail: string, password, ip: string, userAgent: string) {
     const deviceId = v4();
-    const accessToken = await this.generateJwtToken(userId);
-    const refreshToken = await this.generateRefreshToken({ userId, deviceId });
+    const user = await this.validateUser(loginOrEmail, password);
+    const accessToken = await this.generateJwtToken(user.userId);
+    const refreshToken = await this.generateRefreshToken({
+      userId: user.userId,
+      deviceId,
+    });
     const refreshPayload = await this.verifyToken(refreshToken);
     const userTokensInfoDto = {
-      userId,
+      userId: user.userId,
       refreshToken,
       invalidTokens: [],
     };
@@ -61,7 +61,7 @@ export class AuthService {
       id: deviceId,
       ip,
       title: userAgent,
-      userId,
+      userId: user.userId,
       createdAt: refreshPayload.iat,
       expiredAt: refreshPayload.exp,
       lastActiveDate: Date.now(),
@@ -114,7 +114,14 @@ export class AuthService {
     if (!emailInfo) {
       throw new BadRequestException('email with this code doesn`t exist');
     }
+    if (emailInfo.isConfirmed) {
+      throw new BadRequestException({
+        field: 'code',
+        message: 'Email already confirmed',
+      });
+    }
     emailInfo.confirmationCode = code;
+    emailInfo.isConfirmed = true;
     emailInfo.save();
     return;
   }
@@ -163,7 +170,10 @@ export class AuthService {
     const emailInfo = await this.emailModel.findOne({ email });
     if (!emailInfo) throw new BadRequestException('wrong email');
     if (emailInfo.isConfirmed)
-      throw new BadRequestException('email already confirmed');
+      throw new BadRequestException({
+        field: 'code',
+        message: 'Email already confirmed',
+      });
 
     await this.emailService.sendConfirmation(email, emailInfo.confirmationCode);
     return;
