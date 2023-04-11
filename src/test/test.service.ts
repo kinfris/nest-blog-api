@@ -13,6 +13,16 @@ import {
 } from '../comments/schemas/commentLikes.schema';
 import { Blog, BlogDocument } from '../blogs/shemas/blogs.schema';
 import { User, UserDocument } from '../users/shemas/users.schema';
+import { Device, DeviceDocument } from '../devices/schemas/devices.schema';
+import {
+  UserHashes,
+  UserHashesDocument,
+} from '../users/shemas/userPassHashes.schema';
+import { Email, EmailDocument } from '../email/schemas/email.schema';
+import {
+  UserTokens,
+  UserTokensDocument,
+} from '../auth/shemas/userTokens.schema';
 
 @Injectable()
 export class TestService {
@@ -26,6 +36,12 @@ export class TestService {
     @InjectModel(CommentLikes.name)
     private commentLikesModel: Model<CommentLikesDocument>,
     @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
+    @InjectModel(Device.name) private deviceModel: Model<DeviceDocument>,
+    @InjectModel(UserHashes.name)
+    private userHashesModel: Model<UserHashesDocument>,
+    @InjectModel(Email.name) private emailModel: Model<EmailDocument>,
+    @InjectModel(UserTokens.name)
+    private userTokensModel: Model<UserTokensDocument>,
   ) {}
 
   async clearDb() {
@@ -35,5 +51,9 @@ export class TestService {
     await this.commentModel.deleteMany({});
     await this.commentLikesModel.deleteMany({});
     await this.blogModel.deleteMany({});
+    await this.deviceModel.deleteMany({});
+    await this.userHashesModel.deleteMany({});
+    await this.emailModel.deleteMany({});
+    await this.userTokensModel.deleteMany({});
   }
 }

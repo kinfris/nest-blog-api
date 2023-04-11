@@ -11,6 +11,13 @@ import {
 } from '../comments/schemas/commentLikes.schema';
 import { Blog, BlogSchema } from '../blogs/shemas/blogs.schema';
 import { User, UserSchema } from '../users/shemas/users.schema';
+import { Device, DeviceSchema } from '../devices/schemas/devices.schema';
+import {
+  UserHashes,
+  UserHashesSchema,
+} from '../users/shemas/userPassHashes.schema';
+import { Email, EmailSchema } from '../email/schemas/email.schema';
+import { UserTokens, UserTokensSchema } from '../auth/shemas/userTokens.schema';
 
 @Module({
   imports: [
@@ -24,6 +31,14 @@ import { User, UserSchema } from '../users/shemas/users.schema';
       { name: CommentLikes.name, schema: CommentLikesSchema },
     ]),
     MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
+    MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
+    MongooseModule.forFeature([
+      { name: UserHashes.name, schema: UserHashesSchema },
+    ]),
+    MongooseModule.forFeature([{ name: Email.name, schema: EmailSchema }]),
+    MongooseModule.forFeature([
+      { name: UserTokens.name, schema: UserTokensSchema },
+    ]),
   ],
   controllers: [TestController],
   providers: [TestService],
