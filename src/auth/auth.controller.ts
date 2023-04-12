@@ -121,7 +121,7 @@ export class AuthController {
 
   @HttpCode(204)
   @Post('registration-email-resending')
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
   async resendingCodeOnRegistration(@Body() dto: EmailDto) {
     await this.authService.resendingCodeOnRegistration(dto.email);

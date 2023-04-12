@@ -95,7 +95,7 @@ export class AuthService {
   generateJwtToken(userId: string) {
     const payload = { sub: userId };
     return this.jwtService.signAsync(payload, {
-      expiresIn: '10s',
+      expiresIn: '5m',
       secret: process.env.JWT_SECRET,
     });
   }
@@ -109,7 +109,7 @@ export class AuthService {
   }) {
     const payload = { sub: userId, deviceId };
     return this.jwtService.signAsync(payload, {
-      expiresIn: '20s',
+      expiresIn: '10m',
       secret: process.env.JWT_SECRET,
     });
   }
@@ -183,10 +183,10 @@ export class AuthService {
   async resendingCodeOnRegistration(email: string) {
     const emailInfo = await this.emailModel.findOne({ email });
     if (!emailInfo)
-      throw new BadRequestException({ field: 'email', message: 'wrong email' });
+      throw new BadRequestException({ field: 'email', message: 'Wrong email' });
     if (emailInfo.isConfirmed)
       throw new BadRequestException({
-        field: 'code',
+        field: 'email',
         message: 'Email already confirmed',
       });
 
