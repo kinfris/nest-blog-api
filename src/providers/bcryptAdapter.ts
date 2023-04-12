@@ -17,7 +17,10 @@ export class BcryptAdapter {
     for (let i = 0; i < passwordsHashes.length; i++) {
       const isPassMatched = await bcrypt.compare(password, passwordsHashes[i]);
       if (isPassMatched)
-        throw new BadRequestException('this password already been used');
+        throw new BadRequestException({
+          field: 'password',
+          message: 'this password already been used',
+        });
     }
   }
 }

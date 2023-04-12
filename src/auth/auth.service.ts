@@ -117,7 +117,10 @@ export class AuthService {
   async registrationConfirmation(code: string) {
     const emailInfo = await this.emailModel.findOne({ confirmationCode: code });
     if (!emailInfo) {
-      throw new BadRequestException('email with this code doesn`t exist');
+      throw new BadRequestException({
+        field: 'code',
+        message: 'email with this code doesn`t exist',
+      });
     }
     if (emailInfo.isConfirmed) {
       throw new BadRequestException({
@@ -145,17 +148,23 @@ export class AuthService {
   async createNewPassword(newPassword: string, recoveryCode: string) {
     const emailInfo = await this.emailModel.findOne({ recoveryCode });
     if (!emailInfo)
-      throw new BadRequestException('email with this code doesn`t exist');
+      throw new BadRequestException({
+        field: 'email',
+        message: 'email with this code doesn`t exist',
+      });
 
     const user = await this.usersService.findByUserNameOrEmail(emailInfo.email);
     if (!user)
-      throw new BadRequestException('user with this email doesn`t exist');
+      throw new BadRequestException({
+        field: 'email',
+        message: 'user with this email doesn`t exist',
+      });
 
     const userPassHashes = await this.userHashesModel.findOne({
       userId: user.id,
     });
 
-    if (!userPassHashes) throw new BadRequestException('something went wrong');
+    if (!userPassHashes) throw new BadRequestException();
 
     await this.bcryptAdapter.checkArrayOfPasswords(
       userPassHashes.passwordHashes,
@@ -173,7 +182,8 @@ export class AuthService {
 
   async resendingCodeOnRegistration(email: string) {
     const emailInfo = await this.emailModel.findOne({ email });
-    if (!emailInfo) throw new BadRequestException('wrong email');
+    if (!emailInfo)
+      throw new BadRequestException({ field: 'email', message: 'wrong email' });
     if (emailInfo.isConfirmed)
       throw new BadRequestException({
         field: 'code',
