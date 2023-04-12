@@ -71,7 +71,8 @@ export class AuthController {
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
   async registrationConfirmation(@Body() dto: RegistrationConfirmationDTO) {
-    return await this.authService.registrationConfirmation(dto.code);
+    await this.authService.registrationConfirmation(dto.code);
+    return;
   }
 
   @HttpCode(204)
@@ -79,7 +80,8 @@ export class AuthController {
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
   async passwordRecovery(@Body() dto: EmailDto) {
-    return await this.authService.passwordRecovery(dto.email);
+    await this.authService.passwordRecovery(dto.email);
+    return;
   }
 
   @HttpCode(204)

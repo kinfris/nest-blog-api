@@ -89,7 +89,7 @@ export class AuthService {
       }
     }
 
-    return null;
+    throw new UnauthorizedException();
   }
 
   generateJwtToken(userId: string) {
