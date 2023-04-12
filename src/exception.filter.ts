@@ -24,7 +24,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           errorResponse.errorsMessages.push(m);
         });
       } else {
-        errorResponse.errorsMessages.push(responseBody.message);
+        errorResponse.errorsMessages.push(responseBody);
       }
 
       response.status(status).json(errorResponse);
