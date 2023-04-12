@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus,
   Post,
   Req,
   Res,
@@ -75,7 +74,7 @@ export class AuthController {
     return await this.authService.registrationConfirmation(dto.code);
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(204)
   @Post('password-recovery')
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
@@ -83,7 +82,7 @@ export class AuthController {
     return await this.authService.passwordRecovery(dto.email);
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(204)
   @Post('new-password')
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
@@ -140,7 +139,7 @@ export class AuthController {
     return;
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(204)
   @Post('logout')
   async logout(@Req() req: Request) {
     const { refreshToken } = req.cookies;
@@ -150,7 +149,6 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
   @Get('me')
   async getCurrentUserInfo(@CurrentUser() currentUser) {
     return await this.authService.getCurrentUserInfo(currentUser.userId);

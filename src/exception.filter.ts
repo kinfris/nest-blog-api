@@ -21,9 +21,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const responseBody: any = exception.getResponse();
       responseBody.message.forEach((m) => {
         errorResponse.errorsMessages.push(m);
-
-        response.status(status).json(errorResponse);
       });
+      response.status(status).json(errorResponse);
+      return;
     } else {
       const exceptionInfo =
         typeof exception.getResponse() === 'string'
@@ -35,6 +35,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
         path: request.url,
       });
+      return;
     }
   }
 }
