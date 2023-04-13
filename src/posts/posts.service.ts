@@ -2,10 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post, PostDocument } from './schemas/posts.schema';
-import { PostDto, ReturnPostModel } from './dto/post.dto';
+import { PostEntity, ReturnPostModel } from './dto/post.dto';
 import { IQueryFilter } from '../dto/queryFilter.model';
 import { PaginationModel } from '../dto/pagination.model';
-import { UpdatePostDto } from './posts.conroller';
+import { PostDto } from './posts.conroller';
 import { PostLikes, PostLikesDocument } from './schemas/postsLikes.schema';
 import { Comment, CommentDocument } from '../comments/schemas/comments.schema';
 import {
@@ -79,7 +79,7 @@ export class PostsService {
     blogId: string,
     blogName: string,
   ) {
-    const postModel = new PostDto(
+    const postModel = new PostEntity(
       title,
       shortDescription,
       content,
@@ -103,7 +103,7 @@ export class PostsService {
     throw new NotFoundException('Not found');
   }
 
-  async updatePost(id: string, dto: UpdatePostDto) {
+  async updatePost(id: string, dto: PostDto) {
     const post = await this.postModel.findOne({ id });
     if (post) {
       post.title = dto.title;
@@ -136,12 +136,14 @@ export class PostsService {
     userId,
     likeStatus: 'None' | 'Like' | 'Dislike',
   ) {
+    const post = await this.postModel.findOne({ id: postId });
+    if (!post) throw new NotFoundException('Not found');
+
     const postUserLike = await this.postLikesModel.findOne({
       postId,
       userId,
     });
-    const post = await this.postModel.findOne({ id: postId });
-    if (!post) throw new NotFoundException('Not found');
+
     if (!postUserLike) {
       const user = await this.userModel.findOne({ id: userId });
       const newUserPostLikeEntity = {

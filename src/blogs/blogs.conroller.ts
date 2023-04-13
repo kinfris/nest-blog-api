@@ -12,27 +12,35 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { BlogsService } from './blogs.service';
 import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 import { PostsService } from '../posts/posts.service';
-import { Matches, MaxLength } from 'class-validator';
+import { IsNotEmpty, Matches, MaxLength } from 'class-validator';
+import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 
 class BlogDto {
+  @IsNotEmpty()
   @MaxLength(15)
   name: string;
+  @IsNotEmpty()
   @MaxLength(500)
   description: string;
+  @IsNotEmpty()
   @MaxLength(100)
   @Matches('^https://([a-zA-Z0-9_-]+.)+[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*/?$')
   websiteUrl: string;
 }
 
 class CreatePostDto {
+  @IsNotEmpty()
   @MaxLength(30)
   title: string;
+  @IsNotEmpty()
   @MaxLength(100)
   shortDescription: string;
+  @IsNotEmpty()
   @MaxLength(1000)
   content: string;
 }
@@ -51,6 +59,7 @@ export class BlogsController {
     return this.blogService.findBlogs(queryFilters);
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post()
   createBlog(@Body() dto: BlogDto) {
     return this.blogService.createBlog(
@@ -69,6 +78,7 @@ export class BlogsController {
     throw new HttpException('Not found', HttpStatus.NOT_FOUND);
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put('/:id')
   @HttpCode(204)
   async updateBlog(@Param() { id }: { id: string }, @Body() dto: BlogDto) {
@@ -81,6 +91,7 @@ export class BlogsController {
     return;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete('/:id')
   @HttpCode(204)
   async deleteBlog(@Param() { id }: { id: string }) {
@@ -99,6 +110,7 @@ export class BlogsController {
     return this.postsService.findPosts(queryFilters, blogId);
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post('/:blogId/posts')
   async createPost(
     @Param() { blogId }: { blogId: string },

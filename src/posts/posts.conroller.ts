@@ -21,21 +21,21 @@ import { UpdateDto } from '../comments/comments.conroller';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.param.decorator';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
-import { IsIn, IsString } from 'class-validator';
+import { IsIn, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
-type CreatePostDto = {
+export class PostDto {
+  @IsNotEmpty()
+  @MaxLength(30)
   title: string;
+  @IsNotEmpty()
+  @MaxLength(100)
   shortDescription: string;
+  @IsNotEmpty()
+  @MaxLength(1000)
   content: string;
+  @IsNotEmpty()
   blogId: string;
-};
-
-export type UpdatePostDto = {
-  title: 'string';
-  shortDescription: 'string';
-  content: 'string';
-  blogId: 'string';
-};
+}
 
 export class LikeStatusDto {
   @IsString()
@@ -58,8 +58,9 @@ export class PostsController {
     return this.postsService.findPosts(queryFilters);
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post()
-  async createPost(@Body() dto: CreatePostDto) {
+  async createPost(@Body() dto: PostDto) {
     const blog = await this.blogsService.findBlogById(dto.blogId);
     if (blog) {
       return await this.postsService.createPost(
@@ -78,12 +79,10 @@ export class PostsController {
     return await this.postsService.findPostById(id);
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put('/:id')
   @HttpCode(204)
-  async updatePost(
-    @Param() { id }: { id: string },
-    @Body() dto: UpdatePostDto,
-  ) {
+  async updatePost(@Param() { id }: { id: string }, @Body() dto: PostDto) {
     await this.postsService.updatePost(id, dto);
     return;
   }

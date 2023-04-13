@@ -38,7 +38,7 @@ export class ReturnPostModel {
   }
 }
 
-export class PostDto {
+export class PostEntity {
   id = v4();
   title: string;
   shortDescription: string;
