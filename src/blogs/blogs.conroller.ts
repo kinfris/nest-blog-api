@@ -17,30 +17,31 @@ import {
 import { BlogsService } from './blogs.service';
 import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 import { PostsService } from '../posts/posts.service';
-import { IsNotEmpty, Matches, MaxLength } from 'class-validator';
+import { Matches, MaxLength } from 'class-validator';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
+import { IsNotEmptyString } from '../decorators/isNotEmptyString';
 
 class BlogDto {
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MaxLength(15)
   name: string;
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MaxLength(500)
   description: string;
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MaxLength(100)
   @Matches('^https://([a-zA-Z0-9_-]+.)+[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*/?$')
   websiteUrl: string;
 }
 
 class CreatePostDto {
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MaxLength(30)
   title: string;
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MaxLength(100)
   shortDescription: string;
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MaxLength(1000)
   content: string;
 }

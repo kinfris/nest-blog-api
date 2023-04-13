@@ -9,16 +9,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { IsEmail, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, MaxLength, MinLength } from 'class-validator';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.param.decorator';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { IsNotEmptyString } from '../decorators/isNotEmptyString';
 
 class LoginDto {
-  @IsNotEmpty()
+  @IsNotEmptyString()
   loginOrEmail: 'string';
-  @IsNotEmpty()
+  @IsNotEmptyString()
   password: 'string';
 }
 
@@ -26,7 +27,7 @@ class RegistrationDto {
   @MinLength(3)
   @MaxLength(10)
   login: 'string';
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MinLength(6)
   @MaxLength(20)
   password: 'string';
@@ -35,7 +36,7 @@ class RegistrationDto {
 }
 
 class RegistrationConfirmationDTO {
-  @IsNotEmpty()
+  @IsNotEmptyString()
   code: string;
 }
 
@@ -49,7 +50,7 @@ class CreateNewPassDto {
   @MaxLength(20)
   newPassword: string;
 
-  @IsNotEmpty()
+  @IsNotEmptyString()
   recoveryCode: string;
 }
 

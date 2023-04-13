@@ -21,19 +21,20 @@ import { UpdateDto } from '../comments/comments.conroller';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.param.decorator';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
-import { IsIn, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsString, MaxLength } from 'class-validator';
+import { IsNotEmptyString } from '../decorators/isNotEmptyString';
 
 export class PostDto {
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MaxLength(30)
   title: string;
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MaxLength(100)
   shortDescription: string;
-  @IsNotEmpty()
+  @IsNotEmptyString()
   @MaxLength(1000)
   content: string;
-  @IsNotEmpty()
+  @IsNotEmptyString()
   blogId: string;
 }
 
