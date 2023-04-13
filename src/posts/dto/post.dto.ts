@@ -20,7 +20,7 @@ export class ReturnPostModel {
     this.blogName = postInfo.blogName;
     this.createdAt = postInfo.createdAt;
     let userStatus: PostLikeStatusType;
-    if (postLikes.length > 0 && userId) {
+    if (postLikes?.length > 0 && userId) {
       userStatus = postLikes.find((postLike) => userId === postLike.userId);
     }
     this.extendedLikesInfo = {

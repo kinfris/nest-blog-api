@@ -63,7 +63,7 @@ export class CommentsService {
             commentId: comment.id,
           })
           .lean();
-        const likeStatus = commentLike.likeStatus ?? 'None';
+        const likeStatus = commentLike?.likeStatus ?? 'None';
         return new CommentReturnDto(comment, likeStatus);
       }),
     );
