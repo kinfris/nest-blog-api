@@ -36,7 +36,7 @@ export class CommentsController {
     @Param() { id }: { id: string },
     @CurrentUser() currentUser,
   ) {
-    const userId = currentUser.userId || '';
+    const userId = currentUser?.userId || '';
     const comment = await this.commentService.findCommentById(id, userId);
     if (!comment) throw new NotFoundException('Not Found');
     return comment;
@@ -53,7 +53,7 @@ export class CommentsController {
     await this.commentService.changeLikeStatus(
       commentId,
       likeStatusDto.likeStatus,
-      currentUser.userId,
+      currentUser?.userId,
     );
     return;
   }
@@ -76,7 +76,7 @@ export class CommentsController {
     @Param() { id }: { id: string },
     @CurrentUser() currentUser,
   ) {
-    await this.commentService.deleteComment(id, currentUser.userId);
+    await this.commentService.deleteComment(id, currentUser?.userId);
     return;
   }
 }
