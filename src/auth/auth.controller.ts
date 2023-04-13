@@ -154,6 +154,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getCurrentUserInfo(@CurrentUser() currentUser) {
-    return await this.authService.getCurrentUserInfo(currentUser.userId);
+    return await this.authService.getCurrentUserInfo(currentUser?.userId);
   }
 }

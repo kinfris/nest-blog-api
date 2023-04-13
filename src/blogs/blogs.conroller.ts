@@ -113,7 +113,7 @@ export class BlogsController {
     return this.postsService.findPosts(
       queryFilters,
       blogId,
-      currentUser.userID,
+      currentUser?.userID,
     );
   }
 

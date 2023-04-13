@@ -56,7 +56,7 @@ export class PostsController {
   @Get()
   async findPosts(@Query() queryDto: QueryType, @CurrentUser() currentUser) {
     const queryFilters = new QueryFilterModel(queryDto);
-    return this.postsService.findPosts(queryFilters, null, currentUser.userId);
+    return this.postsService.findPosts(queryFilters, null, currentUser?.userId);
   }
 
   @UseGuards(BasicAuthGuard)
@@ -126,7 +126,7 @@ export class PostsController {
     return await this.commentService.createComment(
       postId,
       dto.content,
-      currentUser.userId,
+      currentUser?.userId,
     );
   }
 
@@ -140,7 +140,7 @@ export class PostsController {
   ) {
     await this.postsService.updatePostLikeStatus(
       postId,
-      currentUser.userId,
+      currentUser?.userId,
       likeStatusDto.likeStatus,
     );
     return;
