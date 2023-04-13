@@ -45,8 +45,7 @@ export class PostsService {
       postsResponse.map(async (post) => {
         const postLikes = await this.postLikesModel
           .find({ postId: post.id })
-          .sort({ _id: -1 })
-          .limit(3);
+          .sort({ _id: -1 });
         return new ReturnPostModel(
           {
             id: post.id,
@@ -93,14 +92,15 @@ export class PostsService {
 
   async findPostById(id: string, userId: string | null) {
     const postResponse = await this.postModel.findOne({ id });
+
     if (postResponse) {
       const postLikes = await this.postLikesModel
         .find({ postId: id })
         .sort({ _id: -1 })
-        .limit(3)
         .lean();
       return new ReturnPostModel(postResponse, postLikes, userId);
     }
+
     throw new NotFoundException('Not found');
   }
 
