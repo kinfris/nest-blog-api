@@ -91,7 +91,7 @@ export class PostsService {
     return new ReturnPostModel(postResponse, [], null);
   }
 
-  async findPostById(id: string, userId: string) {
+  async findPostById(id: string, userId: string | null) {
     const postResponse = await this.postModel.findOne({ id });
     if (postResponse) {
       const postLikes = await this.postLikesModel

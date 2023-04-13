@@ -80,7 +80,7 @@ export class PostsController {
     @Param() { id }: { id: string },
     @CurrentUser() currentUser,
   ) {
-    return await this.postsService.findPostById(id, currentUser.userId);
+    return await this.postsService.findPostById(id, currentUser?.userId);
   }
 
   @UseGuards(BasicAuthGuard)
@@ -107,7 +107,7 @@ export class PostsController {
   ) {
     const post = await this.postsService.findPostById(
       postId,
-      currentUser.userId,
+      currentUser?.userId,
     );
     if (post) {
       const queryFilters = new QueryFilterModel(queryDto);
