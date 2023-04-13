@@ -20,6 +20,7 @@ import { PostsService } from '../posts/posts.service';
 import { Matches, MaxLength } from 'class-validator';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 import { IsNotEmptyString } from '../decorators/isNotEmptyString';
+import { CurrentUser } from '../decorators/current-user.param.decorator';
 
 class BlogDto {
   @IsNotEmptyString()
@@ -104,11 +105,16 @@ export class BlogsController {
   async getBlogPosts(
     @Param() { blogId }: { blogId: string },
     @Query() queryDto: QueryType,
+    @CurrentUser() currentUser,
   ) {
     await this.blogService.findBlogById(blogId);
 
     const queryFilters = new QueryFilterModel(queryDto);
-    return this.postsService.findPosts(queryFilters, blogId);
+    return this.postsService.findPosts(
+      queryFilters,
+      blogId,
+      currentUser.userID,
+    );
   }
 
   @UseGuards(BasicAuthGuard)

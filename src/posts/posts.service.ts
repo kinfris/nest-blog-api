@@ -29,7 +29,7 @@ export class PostsService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
-  async findPosts(queryFilters: IQueryFilter, blogId?: string) {
+  async findPosts(queryFilters: IQueryFilter, blogId, userId) {
     const { pageNumber, pageSize, sortBy, sortDirection } = queryFilters;
     const filter: { blogId?: string } = {};
     if (blogId) {
@@ -60,6 +60,7 @@ export class PostsService {
             dislikesCount: post.dislikesCount,
           },
           postLikes,
+          userId,
         );
       }),
     );
@@ -87,10 +88,10 @@ export class PostsService {
       blogName,
     );
     const postResponse = await this.postModel.create(postModel);
-    return new ReturnPostModel(postResponse, []);
+    return new ReturnPostModel(postResponse, [], null);
   }
 
-  async findPostById(id: string) {
+  async findPostById(id: string, userId: string) {
     const postResponse = await this.postModel.findOne({ id });
     if (postResponse) {
       const postLikes = await this.postLikesModel
@@ -98,7 +99,7 @@ export class PostsService {
         .sort({ _id: -1 })
         .limit(3)
         .lean();
-      return new ReturnPostModel(postResponse, postLikes);
+      return new ReturnPostModel(postResponse, postLikes, userId);
     }
     throw new NotFoundException('Not found');
   }

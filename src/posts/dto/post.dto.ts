@@ -11,7 +11,7 @@ export class ReturnPostModel {
   createdAt: Date;
   extendedLikesInfo: ExtendedLikesInfoType;
 
-  constructor(postInfo, postLikes) {
+  constructor(postInfo, postLikes, userId) {
     this.id = postInfo.id;
     this.title = postInfo.title;
     this.shortDescription = postInfo.shortDescription;
@@ -20,10 +20,8 @@ export class ReturnPostModel {
     this.blogName = postInfo.blogName;
     this.createdAt = postInfo.createdAt;
     let userStatus: PostLikeStatusType;
-    if (postLikes.length > 0) {
-      userStatus = postLikes.find(
-        (postLike) => postInfo.userId === postLike.userId,
-      );
+    if (postLikes.length > 0 && userId) {
+      userStatus = postLikes.find((postLike) => userId === postLike.userId);
     }
     this.extendedLikesInfo = {
       likesCount: postInfo.likesCount,

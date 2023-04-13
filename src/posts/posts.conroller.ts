@@ -54,9 +54,9 @@ export class PostsController {
   ) {}
 
   @Get()
-  async findPosts(@Query() queryDto: QueryType) {
+  async findPosts(@Query() queryDto: QueryType, @CurrentUser() currentUser) {
     const queryFilters = new QueryFilterModel(queryDto);
-    return this.postsService.findPosts(queryFilters);
+    return this.postsService.findPosts(queryFilters, null, currentUser.userId);
   }
 
   @UseGuards(BasicAuthGuard)
@@ -76,8 +76,11 @@ export class PostsController {
   }
 
   @Get('/:id')
-  async findPostById(@Param() { id }: { id: string }) {
-    return await this.postsService.findPostById(id);
+  async findPostById(
+    @Param() { id }: { id: string },
+    @CurrentUser() currentUser,
+  ) {
+    return await this.postsService.findPostById(id, currentUser.userId);
   }
 
   @UseGuards(BasicAuthGuard)
@@ -100,8 +103,12 @@ export class PostsController {
   async getPostComments(
     @Param() { postId }: { postId: string },
     @Query() queryDto: QueryType,
+    @CurrentUser() currentUser,
   ) {
-    const post = await this.postsService.findPostById(postId);
+    const post = await this.postsService.findPostById(
+      postId,
+      currentUser.userId,
+    );
     if (post) {
       const queryFilters = new QueryFilterModel(queryDto);
       return this.commentService.findPostComments(queryFilters, postId);
