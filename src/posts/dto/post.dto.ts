@@ -27,11 +27,14 @@ export class ReturnPostModel {
       likesCount: postInfo.likesCount,
       dislikesCount: postInfo.dislikesCount,
       myStatus: userStatus?.likeStatus ?? 'None',
-      newestLikes: postLikes.splice(0, 3).map((m) => ({
-        addedAt: m.addedAt,
-        userId: m.userId,
-        login: m.userLogin,
-      })),
+      newestLikes: postLikes
+        .filter((f) => f.likeStatus === 'Like')
+        .splice(0, 3)
+        .map((m) => ({
+          addedAt: m.addedAt,
+          userId: m.userId,
+          login: m.userLogin,
+        })),
     };
   }
 }
