@@ -13,6 +13,8 @@ import {
   CommentLikes,
   CommentLikesSchema,
 } from '../comments/schemas/commentLikes.schema';
+import { Blog, BlogSchema } from '../blogs/shemas/blogs.schema';
+import { IsBlogExistValidator } from '../decorators/isBlogExist/isBlogExist.validator';
 
 @Module({
   imports: [
@@ -28,9 +30,10 @@ import {
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     forwardRef(() => BlogsModule),
     CommentsModule,
+    MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
   ],
   controllers: [PostsController],
-  providers: [PostsService, JwtAuthGuard],
+  providers: [PostsService, JwtAuthGuard, IsBlogExistValidator],
   exports: [PostsService],
 })
 export class PostsModule {}

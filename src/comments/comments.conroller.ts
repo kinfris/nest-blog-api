@@ -13,7 +13,6 @@ import { CommentsService } from './comments.service';
 import { IsIn, IsString, MaxLength, MinLength } from 'class-validator';
 import { CurrentUser } from '../decorators/current-user.param.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { LocalAuthGuard } from '../auth/guards/local-auth.guard';
 
 export class UpdateDto {
   @MinLength(20)
@@ -69,7 +68,7 @@ export class CommentsController {
     return;
   }
 
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete('/:id')
   @HttpCode(204)
   async deleteComment(

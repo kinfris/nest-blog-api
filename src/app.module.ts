@@ -14,6 +14,7 @@ import { EmailModule } from './email/email.module';
 import { ExtractUserIdMiddleware } from './auth/middleware/extractUserId.middleware';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { IsBlogExistValidator } from './decorators/isBlogExist/isBlogExist.validator';
 
 @Module({
   imports: [
@@ -47,7 +48,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, ThrottlerGuard],
+  providers: [AppService, ThrottlerGuard, IsBlogExistValidator],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

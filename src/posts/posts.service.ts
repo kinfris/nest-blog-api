@@ -15,6 +15,7 @@ import {
 import { likesDislikesCountCalculation } from '../helpers/likesDieslikesCount';
 import { v4 } from 'uuid';
 import { User, UserDocument } from '../users/shemas/users.schema';
+import { Blog, BlogDocument } from '../blogs/shemas/blogs.schema';
 
 @Injectable()
 export class PostsService {
@@ -27,6 +28,7 @@ export class PostsService {
     @InjectModel(CommentLikes.name)
     private commentLikesModel: Model<CommentLikesDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
   ) {}
 
   async findPosts(queryFilters: IQueryFilter, blogId, userId) {
@@ -178,5 +180,9 @@ export class PostsService {
     post.save();
 
     return;
+  }
+
+  async findBlogByIdForValidation(id: string) {
+    return this.blogModel.findOne({ id });
   }
 }

@@ -23,6 +23,7 @@ import { CurrentUser } from '../decorators/current-user.param.decorator';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 import { IsIn, IsString, MaxLength } from 'class-validator';
 import { IsNotEmptyString } from '../decorators/isNotEmptyString';
+import { IsBlogExists } from '../decorators/isBlogExist/isBlogExist.decorator';
 
 export class PostDto {
   @IsNotEmptyString()
@@ -34,6 +35,7 @@ export class PostDto {
   @IsNotEmptyString()
   @MaxLength(1000)
   content: string;
+  @IsBlogExists()
   @IsNotEmptyString()
   blogId: string;
 }
