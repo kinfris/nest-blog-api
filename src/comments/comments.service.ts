@@ -91,15 +91,12 @@ export class CommentsService {
   }
 
   async createComment(postId: string, content: string, userId: string) {
-    try {
-      const user = await this.userModel.findOne({ id: userId }).lean();
-      const post = await this.postModel.findOne({ id: postId });
-      const commentDto = new CommentDto(postId, content, userId, user.login);
-      const newComment = await this.commentModel.create(commentDto);
-      return new CommentReturnDto(newComment, 'None');
-    } catch (e) {
-      throw new NotFoundException('Not Found');
-    }
+    const user = await this.userModel.findOne({ id: userId }).lean();
+    const post = await this.postModel.findOne({ id: postId });
+    if (!user || !post) throw new NotFoundException('Not Found');
+    const commentDto = new CommentDto(postId, content, userId, user.login);
+    const newComment = await this.commentModel.create(commentDto);
+    return new CommentReturnDto(newComment, 'None');
   }
 
   async changeLikeStatus(
