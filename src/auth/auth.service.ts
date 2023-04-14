@@ -234,8 +234,7 @@ export class AuthService {
 
   async logout(userId: string, refreshToken: string) {
     const userTokens = await this.userTokensModel.findOne({ userId });
-    const invalidTokens = userTokens?.invalidTokens || [];
-    const isTokenAlreadyUsed = invalidTokens.find(
+    const isTokenAlreadyUsed = userTokens?.invalidTokens.find(
       (token) => token === refreshToken,
     );
     if (isTokenAlreadyUsed) throw new UnauthorizedException('invalid token');

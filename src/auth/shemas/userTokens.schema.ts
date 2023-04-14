@@ -8,7 +8,7 @@ export class UserTokens {
   @Prop({ required: true })
   userId: string;
 
-  @Prop({ required: true })
+  @Prop()
   refreshToken: string;
 
   @Prop({ required: true })
