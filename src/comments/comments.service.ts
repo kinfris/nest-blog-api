@@ -146,11 +146,11 @@ export class CommentsService {
     return;
   }
 
-  async deleteComment(id: string, userId: string) {
+  async deleteComment(id: string, userId: string | null) {
     const result = await this.commentModel.findOne({ id });
-    if (result.userId !== userId)
+    if (!result) throw new NotFoundException('Not found');
+    if (!userId || result?.userId !== userId)
       throw new ForbiddenException('Don`t have permission for this');
-    if (result) throw new NotFoundException('Not found');
     await this.commentLikesModel.deleteMany({ commentId: id });
     await this.commentModel.deleteOne({ id });
     return;

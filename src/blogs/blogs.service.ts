@@ -72,9 +72,4 @@ export class BlogsService {
     if (response.deletedCount !== 1) throw new NotFoundException('Not found');
     return;
   }
-
-  async findBlogByIdForValidation(id: string) {
-    console.log('tut');
-    return this.blogModel.findOne({ id });
-  }
 }

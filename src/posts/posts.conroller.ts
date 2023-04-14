@@ -113,7 +113,11 @@ export class PostsController {
     );
     if (post) {
       const queryFilters = new QueryFilterModel(queryDto);
-      return this.commentService.findPostComments(queryFilters, postId);
+      return this.commentService.findPostComments(
+        queryFilters,
+        postId,
+        currentUser?.userId,
+      );
     }
     throw new NotFoundException();
   }
