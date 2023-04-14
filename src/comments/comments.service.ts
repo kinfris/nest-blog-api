@@ -17,6 +17,7 @@ import { PaginationModel } from '../dto/pagination.model';
 import { User, UserDocument } from '../users/shemas/users.schema';
 import { likesDislikesCountCalculation } from '../helpers/likesDieslikesCount';
 import { v4 } from 'uuid';
+import { Post, PostDocument } from '../posts/schemas/posts.schema';
 
 @Injectable()
 export class CommentsService {
@@ -26,6 +27,7 @@ export class CommentsService {
     @InjectModel(CommentLikes.name)
     private commentLikesModel: Model<CommentLikesDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Post.name) private postModel: Model<PostDocument>,
   ) {}
 
   async findCommentById(id: string, userId = '') {
@@ -91,6 +93,7 @@ export class CommentsService {
   async createComment(postId: string, content: string, userId: string) {
     try {
       const user = await this.userModel.findOne({ id: userId }).lean();
+      const post = await this.postModel.findOne({ id: postId });
       const commentDto = new CommentDto(postId, content, userId, user.login);
       const newComment = await this.commentModel.create(commentDto);
       return new CommentReturnDto(newComment, 'None');

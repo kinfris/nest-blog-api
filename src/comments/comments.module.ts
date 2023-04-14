@@ -8,6 +8,7 @@ import {
   CommentLikesSchema,
 } from './schemas/commentLikes.schema';
 import { User, UserSchema } from '../users/shemas/users.schema';
+import { Post, PostSchema } from '../posts/schemas/posts.schema';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { User, UserSchema } from '../users/shemas/users.schema';
       { name: CommentLikes.name, schema: CommentLikesSchema },
     ]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
   ],
   controllers: [CommentsController],
   providers: [CommentsService],
