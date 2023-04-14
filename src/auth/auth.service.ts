@@ -95,7 +95,7 @@ export class AuthService {
   generateJwtToken(userId: string) {
     const payload = { sub: userId };
     return this.jwtService.signAsync(payload, {
-      expiresIn: '5m',
+      expiresIn: '10s',
       secret: process.env.JWT_SECRET,
     });
   }
@@ -109,7 +109,7 @@ export class AuthService {
   }) {
     const payload = { sub: userId, deviceId };
     return this.jwtService.signAsync(payload, {
-      expiresIn: '10m',
+      expiresIn: '20s',
       secret: process.env.JWT_SECRET,
     });
   }
