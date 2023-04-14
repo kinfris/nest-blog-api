@@ -78,17 +78,14 @@ export class CommentsService {
     return { ...paginationInfo, items: comments };
   }
 
-  async updateComment(id: string, newContent: string) {
-    try {
-      const comment = await this.commentModel.findOne({ id });
-      if (comment) {
-        comment.content = newContent;
-        comment.save();
-        return;
-      }
-    } catch (e) {
-      throw new NotFoundException('Not Found');
-    }
+  async updateComment(id: string, newContent: string, userId: string) {
+    const comment = await this.commentModel.findOne({ id });
+    if (!comment) throw new NotFoundException('Not Found');
+    if (!userId || comment?.userId !== userId)
+      throw new ForbiddenException('Don`t have permission for this');
+    comment.content = newContent;
+    comment.save();
+    return;
   }
 
   async createComment(postId: string, content: string, userId: string) {

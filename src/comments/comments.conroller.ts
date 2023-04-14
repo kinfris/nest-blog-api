@@ -63,8 +63,13 @@ export class CommentsController {
   async updateComment(
     @Param() { id }: { id: string },
     @Body() updateDto: UpdateDto,
+    @CurrentUser() currentUser,
   ) {
-    await this.commentService.updateComment(id, updateDto.content);
+    await this.commentService.updateComment(
+      id,
+      updateDto.content,
+      currentUser?.userId,
+    );
     return;
   }
 
