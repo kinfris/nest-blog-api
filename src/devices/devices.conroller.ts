@@ -2,7 +2,7 @@ import { Controller, Delete, Get, HttpCode, Param, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { DevicesService } from './devices.service';
 
-@Controller('devices')
+@Controller('/security/devices')
 export class DevicesController {
   constructor(private deviceService: DevicesService) {}
 

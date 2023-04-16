@@ -15,6 +15,7 @@ import { ExtractUserIdMiddleware } from './auth/middleware/extractUserId.middlew
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { IsBlogExistValidator } from './decorators/isBlogExist/isBlogExist.validator';
+import { DevicesModule } from './devices/devices.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { IsBlogExistValidator } from './decorators/isBlogExist/isBlogExist.valid
     TestModule,
     AuthModule,
     EmailModule,
+    DevicesModule,
     MailerModule.forRoot({
       transport: {
         service: 'gmail',

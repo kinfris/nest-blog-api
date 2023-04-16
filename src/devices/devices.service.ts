@@ -19,7 +19,7 @@ export class DevicesService {
   ) {}
 
   async getUserSessions(refreshToken: string) {
-    const tokenPayload = this.jwtService.verify(refreshToken);
+    const tokenPayload = this.verifyToken(refreshToken);
     const sessions = await this.deviceModel
       .find({ userId: tokenPayload.sub })
       .lean();
@@ -28,7 +28,7 @@ export class DevicesService {
   }
 
   async deleteAllSessionsExceptCurrent(refreshToken: string) {
-    const tokenPayload = this.jwtService.verify(refreshToken);
+    const tokenPayload = this.verifyToken(refreshToken);
     if (!tokenPayload) throw new UnauthorizedException();
     await this.deviceModel.deleteMany({
       userId: tokenPayload.sub,
@@ -38,12 +38,23 @@ export class DevicesService {
   }
 
   async deleteCurrenSession(refreshToken: string, deviceID: string) {
-    const tokenPayload = this.jwtService.verify(refreshToken);
+    const tokenPayload = this.verifyToken(refreshToken);
     if (!tokenPayload) throw new UnauthorizedException();
     const session = await this.deviceModel.findOne({ id: deviceID });
     if (!session) throw new NotFoundException('Not found');
     if (tokenPayload.sub !== session.userId) throw new ForbiddenException();
     await this.deviceModel.deleteOne({ id: deviceID });
     return;
+  }
+
+  verifyToken(refreshToken) {
+    try {
+      const tokenPayload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_SECRET,
+      });
+      return tokenPayload;
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
   }
 }
