@@ -146,8 +146,10 @@ export class AuthController {
   @Post('logout')
   async logout(@Req() req: Request) {
     const { refreshToken } = req.cookies;
-    const { sub: userId } = await this.authService.verifyToken(refreshToken);
-    await this.authService.logout(userId, refreshToken);
+    const { sub: userId, deviceId } = await this.authService.verifyToken(
+      refreshToken,
+    );
+    await this.authService.logout(userId, refreshToken, deviceId);
     return;
   }
 

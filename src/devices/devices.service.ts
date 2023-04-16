@@ -24,7 +24,12 @@ export class DevicesService {
       .find({ userId: tokenPayload.sub })
       .lean();
     if (sessions.length === 0) throw new UnauthorizedException();
-    return sessions;
+    return sessions.map((m) => ({
+      ip: m.ip,
+      title: m.title,
+      lastActiveDate: m.lastActiveDate,
+      deviceId: m.id,
+    }));
   }
 
   async deleteAllSessionsExceptCurrent(refreshToken: string) {

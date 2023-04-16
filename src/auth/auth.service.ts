@@ -232,7 +232,7 @@ export class AuthService {
     return { accessToken, refreshToken: newRefreshToken };
   }
 
-  async logout(userId: string, refreshToken: string) {
+  async logout(userId: string, refreshToken: string, deviceId: string) {
     const userTokens = await this.userTokensModel.findOne({ userId });
     const isTokenAlreadyUsed = userTokens?.invalidTokens.find(
       (token) => token === refreshToken,
@@ -240,6 +240,9 @@ export class AuthService {
     if (isTokenAlreadyUsed) throw new UnauthorizedException('invalid token');
     userTokens.refreshToken = '';
     userTokens.invalidTokens.push(refreshToken);
+
+    const result = await this.deviceModel.deleteOne({ id: deviceId });
+    if (result.deletedCount !== 1) throw new UnauthorizedException();
     userTokens.save();
     return;
   }
