@@ -37,7 +37,7 @@ export class DevicesService {
     if (!tokenPayload) throw new UnauthorizedException();
     await this.deviceModel.deleteMany({
       userId: tokenPayload.sub,
-      deviceId: { $nin: [tokenPayload.deviceId] },
+      id: { $nin: [tokenPayload.deviceId] },
     });
     return;
   }
