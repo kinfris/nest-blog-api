@@ -45,7 +45,7 @@ export class DevicesService {
   async deleteCurrenSession(refreshToken: string, deviceId: string) {
     const tokenPayload = this.verifyToken(refreshToken);
     const session = await this.deviceModel.findOne({
-      id: tokenPayload.deviceId,
+      id: deviceId,
     });
     if (!session) throw new NotFoundException();
     if (tokenPayload.sub !== session.userId) throw new ForbiddenException();
