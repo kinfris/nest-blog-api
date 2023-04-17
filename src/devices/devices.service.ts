@@ -42,13 +42,13 @@ export class DevicesService {
     return;
   }
 
-  async deleteCurrenSession(refreshToken: string, deviceID: string) {
+  async deleteCurrenSession(refreshToken: string, deviceId: string) {
     const tokenPayload = this.verifyToken(refreshToken);
-    if (!tokenPayload) throw new UnauthorizedException();
-    const session = await this.deviceModel.findOne({ id: deviceID });
-    if (!session) throw new NotFoundException('Not found');
+    if (tokenPayload.deviceId !== deviceId) throw new UnauthorizedException();
+    const session = await this.deviceModel.findOne({ id: deviceId });
+    if (!session) throw new NotFoundException();
     if (tokenPayload.sub !== session.userId) throw new ForbiddenException();
-    await this.deviceModel.deleteOne({ id: deviceID });
+    await this.deviceModel.deleteOne({ id: deviceId });
     return;
   }
 
