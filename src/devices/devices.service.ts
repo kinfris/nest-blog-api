@@ -48,9 +48,12 @@ export class DevicesService {
       id: tokenPayload.deviceId,
     });
     if (tokenPayload.sub !== session.userId) throw new ForbiddenException();
-    if (!session || tokenPayload.deviceId !== deviceId)
-      throw new NotFoundException();
-    await this.deviceModel.deleteOne({ id: tokenPayload.deviceId });
+    if (!session) throw new NotFoundException();
+    const result = await this.deviceModel.deleteOne({
+      id: tokenPayload.deviceId,
+      userId: session.userId,
+    });
+    if (result.deletedCount !== 1) throw new ForbiddenException();
     return;
   }
 
