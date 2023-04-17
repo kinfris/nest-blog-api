@@ -45,10 +45,12 @@ export class DevicesService {
   async deleteCurrenSession(refreshToken: string, deviceId: string) {
     const tokenPayload = this.verifyToken(refreshToken);
     if (tokenPayload.deviceId !== deviceId) throw new UnauthorizedException();
-    const session = await this.deviceModel.findOne({ id: deviceId });
+    const session = await this.deviceModel.findOne({
+      id: tokenPayload.deviceId,
+    });
     if (!session) throw new NotFoundException();
     if (tokenPayload.sub !== session.userId) throw new ForbiddenException();
-    await this.deviceModel.deleteOne({ id: deviceId });
+    await this.deviceModel.deleteOne({ id: tokenPayload.deviceId });
     return;
   }
 
