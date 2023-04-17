@@ -20,14 +20,14 @@ export class DevicesController {
     return;
   }
 
-  @Delete('/:deviceID')
+  @Delete('/:deviceId')
   @HttpCode(204)
   async deleteCurrentSession(
     @Req() req: Request,
-    @Param() { deviceID }: { deviceID: string },
+    @Param() { deviceId }: { deviceId: string },
   ) {
     const { refreshToken } = req.cookies;
-    await this.deviceService.deleteCurrenSession(refreshToken, deviceID);
+    await this.deviceService.deleteCurrenSession(refreshToken, deviceId);
     return;
   }
 }
