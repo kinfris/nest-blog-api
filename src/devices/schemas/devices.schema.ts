@@ -18,7 +18,7 @@ export class Device {
   userId: string;
 
   @Prop({ required: true })
-  lastActiveDate: number;
+  lastActiveDate: Date;
 
   @Prop({ required: true })
   createdAt: Date;

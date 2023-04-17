@@ -69,7 +69,7 @@ export class AuthService {
       userId: user.userId,
       createdAt: refreshPayload.iat,
       expiredAt: refreshPayload.exp,
-      lastActiveDate: Date.now(),
+      lastActiveDate: Date,
     };
     await this.userTokensModel.create(userTokensInfoDto);
     await this.deviceModel.create(sessionEntity);
@@ -226,7 +226,7 @@ export class AuthService {
     const newRefreshTokenPayload = await this.verifyToken(newRefreshToken);
     const sessionInfo = await this.deviceModel.findOne({ id: deviceId });
     if (!sessionInfo) throw new NotFoundException();
-    sessionInfo.lastActiveDate = Date.now();
+    sessionInfo.lastActiveDate = new Date();
     sessionInfo.expiredAt = newRefreshTokenPayload.exp;
     sessionInfo.save();
     return { accessToken, refreshToken: newRefreshToken };
