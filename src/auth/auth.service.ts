@@ -69,7 +69,7 @@ export class AuthService {
       userId: user.userId,
       createdAt: refreshPayload.iat,
       expiredAt: refreshPayload.exp,
-      lastActiveDate: Date,
+      lastActiveDate: new Date(),
     };
     await this.userTokensModel.create(userTokensInfoDto);
     await this.deviceModel.create(sessionEntity);
