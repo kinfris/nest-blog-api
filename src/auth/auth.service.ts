@@ -189,8 +189,11 @@ export class AuthService {
         field: 'email',
         message: 'Email already confirmed',
       });
+    const newConfirmationCode = v4();
+    emailInfo.confirmationCode = newConfirmationCode;
+    emailInfo.save();
 
-    await this.emailService.sendConfirmation(email, emailInfo.confirmationCode);
+    await this.emailService.sendConfirmation(email, newConfirmationCode);
     return;
   }
 
