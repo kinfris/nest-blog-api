@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post, PostDocument } from './schemas/posts.schema';
@@ -120,7 +124,10 @@ export class PostsService {
     throw new NotFoundException('Not found');
   }
 
-  async updatePost(id: string, dto: PostDto) {
+  async updatePost(id: string, dto: PostDto, userId: string, blogId: string) {
+    const blog = await this.blogModel.findOne({ id: blogId }).lean();
+    if (!blog) throw new NotFoundException();
+    if (blog?.bloggerId !== userId) throw new ForbiddenException();
     const post = await this.postModel.findOne({ id });
     if (post) {
       post.title = dto.title;

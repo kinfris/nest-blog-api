@@ -160,8 +160,7 @@ export class BloggersController {
     @Body() dto: PostDto,
     @CurrentUser() currentUser,
   ) {
-    if (blogId !== currentUser.userId) throw new ForbiddenException();
-    await this.postsService.updatePost(id, dto);
+    await this.postsService.updatePost(id, dto, currentUser.userId, blogId);
     return;
   }
 
