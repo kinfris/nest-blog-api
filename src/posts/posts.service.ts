@@ -140,7 +140,10 @@ export class PostsService {
     throw new NotFoundException('Not Found');
   }
 
-  async deletePost(id: string) {
+  async deletePost(id: string, userId: string, blogId: string) {
+    const blog = await this.blogModel.findOne({ id: blogId }).lean();
+    if (!blog) throw new NotFoundException();
+    if (blog?.bloggerId !== userId) throw new ForbiddenException();
     const deleteResponse = await this.postModel.deleteOne({ id });
     if (deleteResponse.deletedCount !== 1) {
       throw new NotFoundException('Not found');

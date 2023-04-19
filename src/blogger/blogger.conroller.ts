@@ -171,8 +171,7 @@ export class BloggersController {
     @Param() { blogId, id }: { blogId: string; id: string },
     @CurrentUser() currentUser,
   ) {
-    if (blogId !== currentUser.userId) throw new ForbiddenException();
-    await this.postsService.deletePost(id);
+    await this.postsService.deletePost(id, currentUser.userId, blogId);
     return;
   }
 }
