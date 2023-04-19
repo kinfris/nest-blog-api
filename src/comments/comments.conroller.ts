@@ -37,7 +37,7 @@ export class CommentsController {
   ) {
     const userId = currentUser?.userId || '';
     const comment = await this.commentService.findCommentById(id, userId);
-    if (!comment) throw new NotFoundException('Not Found');
+    //if (!comment) throw new NotFoundException('Not Found');
     return comment;
   }
 
