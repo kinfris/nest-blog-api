@@ -26,12 +26,14 @@ export class BlogDto {
   createdAt: Date;
   isMembership: boolean;
   bloggerId: string;
+  bloggerLogin: string;
 
   constructor(
     name: string,
     description: string,
     websiteUrl: string,
     userId: string,
+    userLogin: string,
   ) {
     this.name = name;
     this.description = description;
@@ -39,5 +41,6 @@ export class BlogDto {
     this.createdAt = new Date();
     this.isMembership = false;
     this.bloggerId = userId;
+    this.bloggerLogin = userLogin;
   }
 }

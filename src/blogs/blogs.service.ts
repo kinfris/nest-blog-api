@@ -2,38 +2,20 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogDocument } from './shemas/blogs.schema';
 import { Model } from 'mongoose';
-import { ReturnBlogModel } from './dto/blog.dto';
-import { IQueryFilter } from '../dto/queryFilter.model';
+import { ReturnBlogModel, ReturnBlogModelForSA } from './dto/blog.dto';
+import { QueryFilterModel } from '../dto/queryFilter.model';
 import { PaginationModel } from '../dto/pagination.model';
 
 @Injectable()
 export class BlogsService {
   constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) {}
 
-  async findBlogs(queryFilters: IQueryFilter) {
-    try {
-      const { pageNumber, pageSize, searchNameTerm, sortBy, sortDirection } =
-        queryFilters;
-      const blogResponse = await this.blogModel
-        .find({ name: { $regex: searchNameTerm, $options: 'i' } })
-        .sort({ [sortBy]: sortDirection })
-        .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
-        .limit(pageSize)
-        .lean();
-      const blogs = blogResponse.map((blog) => new ReturnBlogModel(blog));
-      const blogsCount = await this.blogModel
-        .find()
-        .where('name', { $regex: searchNameTerm, $options: 'i' })
-        .countDocuments();
-      const paginationInfo = new PaginationModel(
-        pageNumber,
-        pageSize,
-        blogsCount,
-      );
-      return { ...paginationInfo, items: blogs };
-    } catch (e) {
-      console.log(e);
-    }
+  async findBlogs(queryFilters: QueryFilterModel) {
+    const { blogResponse, ...paginationInfo } = await this.findBlogsWithPaging(
+      queryFilters,
+    );
+    const blogs = blogResponse.map((blog) => new ReturnBlogModel(blog));
+    return { ...paginationInfo, items: blogs };
   }
 
   // async createBlog(name: string, description: string, websiteUrl: string) {
@@ -41,7 +23,7 @@ export class BlogsService {
   //   const blogResponse = await this.blogModel.create(newBlog);
   //   return new ReturnBlogModel(blogResponse);
   // }
-  //
+
   async findBlogById(id: string) {
     const blogResponse = await this.blogModel.findOne({ id });
     if (blogResponse) {
@@ -49,6 +31,7 @@ export class BlogsService {
     }
     throw new NotFoundException('Not found');
   }
+
   //
   // async updateBlog(
   //   id: string,
@@ -72,4 +55,33 @@ export class BlogsService {
   //   if (response.deletedCount !== 1) throw new NotFoundException('Not found');
   //   return;
   // }
+  async findBlogsForSa(queryFilters: QueryFilterModel) {
+    const { blogResponse, ...paginationInfo } = await this.findBlogsWithPaging(
+      queryFilters,
+    );
+    const blogs = blogResponse.map((blog) => new ReturnBlogModelForSA(blog));
+    return { ...paginationInfo, items: blogs };
+  }
+
+  async findBlogsWithPaging(queryFilters: QueryFilterModel) {
+    const { pageNumber, pageSize, searchNameTerm, sortBy, sortDirection } =
+      queryFilters;
+    const blogResponse = await this.blogModel
+      .find({ name: { $regex: searchNameTerm, $options: 'i' } })
+      .sort({ [sortBy]: sortDirection })
+      .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+      .limit(pageSize)
+      .lean();
+
+    const blogsCount = await this.blogModel
+      .find()
+      .where('name', { $regex: searchNameTerm, $options: 'i' })
+      .countDocuments();
+    const paginationInfo = new PaginationModel(
+      pageNumber,
+      pageSize,
+      blogsCount,
+    );
+    return { ...paginationInfo, blogResponse };
+  }
 }

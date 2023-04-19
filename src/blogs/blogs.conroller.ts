@@ -11,8 +11,6 @@ import {
 import { BlogsService } from './blogs.service';
 import { QueryFilterModel, QueryType } from '../dto/queryFilter.model';
 import { PostsService } from '../posts/posts.service';
-import { Matches, MaxLength } from 'class-validator';
-import { IsNotEmptyString } from '../decorators/isNotEmptyString';
 import { CurrentUser } from '../decorators/current-user.param.decorator';
 
 // class BlogDto {

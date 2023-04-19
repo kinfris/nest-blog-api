@@ -3,15 +3,8 @@ import { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
 
-export type UserEntityType = {
-  login: string;
-  passwordHash: string;
-  email: string;
-  createdAt: Date;
-};
-
 @Schema()
-export class User implements UserEntityType {
+export class User {
   @Prop({ required: true })
   id: string;
   @Prop({ required: true, index: 'text' })

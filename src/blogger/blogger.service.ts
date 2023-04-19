@@ -2,6 +2,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -9,10 +10,14 @@ import { BlogDto, ReturnBlogModel } from './dto/blogger.dto';
 import { IQueryFilter } from '../dto/queryFilter.model';
 import { PaginationModel } from '../dto/pagination.model';
 import { Blog, BlogDocument } from '../blogs/shemas/blogs.schema';
+import { User, UserDocument } from '../users/shemas/users.schema';
 
 @Injectable()
 export class BloggerService {
-  constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) {}
+  constructor(
+    @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+  ) {}
 
   // async findBlogs(queryFilters: IQueryFilter) {
   //   try {
@@ -75,7 +80,15 @@ export class BloggerService {
     websiteUrl: string,
     userId: string,
   ) {
-    const newBlog = new BlogDto(name, description, websiteUrl, userId);
+    const user = await this.userModel.findOne({ id: userId });
+    if (!user) throw new UnauthorizedException();
+    const newBlog = new BlogDto(
+      name,
+      description,
+      websiteUrl,
+      userId,
+      user.login,
+    );
     const blogResponse = await this.blogModel.create(newBlog);
     return new ReturnBlogModel(blogResponse);
   }
