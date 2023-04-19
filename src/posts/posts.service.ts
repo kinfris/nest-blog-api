@@ -133,7 +133,6 @@ export class PostsService {
       post.title = dto.title;
       post.shortDescription = dto.shortDescription;
       post.content = dto.content;
-      post.blogId = dto.blogId;
       post.save();
       return;
     }
