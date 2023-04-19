@@ -60,8 +60,10 @@ export class BloggerService {
         .lean();
       const blogs = blogResponse.map((blog) => new ReturnBlogModel(blog));
       const blogsCount = await this.blogModel
-        .find()
-        .where('name', { $regex: searchNameTerm, $options: 'i' })
+        .find({
+          name: { $regex: searchNameTerm, $options: 'i' },
+          bloggerId,
+        })
         .countDocuments();
       const paginationInfo = new PaginationModel(
         pageNumber,
