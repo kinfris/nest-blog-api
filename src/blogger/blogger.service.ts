@@ -90,7 +90,7 @@ export class BloggerService {
 
   async isBlogByExist(id: string) {
     const blogResponse = await this.blogModel.findOne({ id }).lean();
-    if (blogResponse) throw new NotFoundException();
+    if (!blogResponse) throw new NotFoundException();
     return blogResponse;
   }
 
@@ -103,7 +103,7 @@ export class BloggerService {
   ) {
     const blog = await this.blogModel.findOne({ id });
     if (blog) {
-      if (blog.bloggerId !== userId) throw new ForbiddenException();
+      if (blog?.bloggerId !== userId) throw new ForbiddenException();
       blog.name = name;
       blog.description = description;
       blog.websiteUrl = websiteUrl;
@@ -115,7 +115,7 @@ export class BloggerService {
 
   async deleteBlog(id: string, userId: string) {
     const blog = await this.blogModel.findOne({ id });
-    if (blog.bloggerId !== userId) throw new ForbiddenException();
+    if (blog?.bloggerId !== userId) throw new ForbiddenException();
     const response = await this.blogModel.deleteOne({ id });
     if (response.deletedCount !== 1) throw new NotFoundException('Not found');
     return;

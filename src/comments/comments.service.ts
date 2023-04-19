@@ -18,6 +18,7 @@ import { User, UserDocument } from '../users/shemas/users.schema';
 import { likesDislikesCountCalculation } from '../helpers/likesDieslikesCount';
 import { v4 } from 'uuid';
 import { Post, PostDocument } from '../posts/schemas/posts.schema';
+import { BanInfo, BanInfoDocument } from '../users/shemas/banInfo.schema';
 
 @Injectable()
 export class CommentsService {
@@ -28,10 +29,15 @@ export class CommentsService {
     private commentLikesModel: Model<CommentLikesDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
+    @InjectModel(BanInfo.name) private banInfoModel: Model<BanInfoDocument>,
   ) {}
 
   async findCommentById(id: string, userId = '') {
     const comment = await this.commentModel.findOne({ id }).lean();
+    const isPostCreatorBanned = await this.banInfoModel.findOne({
+      userId: comment.userId,
+    });
+    if (isPostCreatorBanned?.isBanned) throw new NotFoundException();
     if (comment) {
       let commentLike: any = {};
       if (userId) {

@@ -6,6 +6,7 @@ export class QueryFilterModel {
   sortDirection: 'desc' | 'asc' = 'desc';
   pageNumber = 1;
   pageSize = 10;
+  banStatus: 'all' | 'banned' | 'notBanned' = 'all';
 
   constructor(query: QueryType) {
     if (query.searchNameTerm) {
@@ -35,6 +36,14 @@ export class QueryFilterModel {
     if (query.pageSize && +query.pageSize > 0) {
       this.pageSize = Number.parseInt(query.pageSize);
     }
+
+    if (
+      query.banStatus === 'all' ||
+      query.banStatus === 'banned' ||
+      query.banStatus === 'notBanned'
+    ) {
+      this.banStatus = query.banStatus;
+    }
   }
 }
 
@@ -46,6 +55,7 @@ export type QueryType = {
   sortDirection?: string;
   pageNumber: string;
   pageSize: string;
+  banStatus?: string;
 };
 
 export interface IQueryFilter {
@@ -56,4 +66,5 @@ export interface IQueryFilter {
   sortDirection: 'desc' | 'asc';
   pageNumber: number;
   pageSize: number;
+  banStatus: 'all' | 'banned' | 'notBanned';
 }

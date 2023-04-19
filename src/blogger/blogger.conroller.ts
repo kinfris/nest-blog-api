@@ -142,7 +142,7 @@ export class BloggersController {
     @CurrentUser() currentUser,
   ) {
     const blog = await this.bloggerService.isBlogByExist(blogId);
-    if (blog.bloggerId !== currentUser.userId) throw new ForbiddenException();
+    if (blog?.bloggerId !== currentUser.userId) throw new ForbiddenException();
     return await this.postsService.createPost(
       dto.title,
       dto.shortDescription,

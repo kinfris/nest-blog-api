@@ -9,16 +9,18 @@ import {
 } from './schemas/commentLikes.schema';
 import { User, UserSchema } from '../users/shemas/users.schema';
 import { Post, PostSchema } from '../posts/schemas/posts.schema';
+import { BanInfo, BanInfoSchema } from '../users/shemas/banInfo.schema';
+
+const schemas = [
+  { name: Comment.name, schema: CommentSchema },
+  { name: CommentLikes.name, schema: CommentLikesSchema },
+  { name: User.name, schema: UserSchema },
+  { name: Post.name, schema: PostSchema },
+  { name: BanInfo.name, schema: BanInfoSchema },
+];
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
-    MongooseModule.forFeature([
-      { name: CommentLikes.name, schema: CommentLikesSchema },
-    ]),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
-  ],
+  imports: [MongooseModule.forFeature(schemas)],
   controllers: [CommentsController],
   providers: [CommentsService],
   exports: [CommentsService],

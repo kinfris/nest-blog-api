@@ -92,32 +92,93 @@ export class UsersService {
       searchEmailTerm,
       sortBy,
       sortDirection,
+      banStatus,
     } = queryFilters;
-    const usersResponse = await this.userModel
-      .find({
-        $or: [
-          { login: { $regex: searchLoginTerm, $options: 'i' } },
-          { email: { $regex: searchEmailTerm, $options: 'i' } },
-        ],
-      })
-      .sort({ [sortBy]: sortDirection })
-      .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
-      .limit(pageSize)
-      .lean();
+    let usersResponse = [];
+    if (banStatus === 'all') {
+      usersResponse = await this.userModel
+        .find({
+          $or: [
+            { login: { $regex: searchLoginTerm, $options: 'i' } },
+            { email: { $regex: searchEmailTerm, $options: 'i' } },
+          ],
+        })
+        .sort({ [sortBy]: sortDirection })
+        .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+        .limit(pageSize)
+        .lean();
+    }
+    const bannedUsers = await this.banInfoModel.find().lean();
+    const bannedUsersIds = bannedUsers.map((m) => m.userId);
+    if (banStatus === 'notBanned') {
+      usersResponse = await this.userModel
+        .find({
+          $or: [
+            { login: { $regex: searchLoginTerm, $options: 'i' } },
+            { email: { $regex: searchEmailTerm, $options: 'i' } },
+          ],
+          id: { $nin: [...bannedUsersIds] },
+        })
+        .sort({ [sortBy]: sortDirection })
+        .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+        .limit(pageSize)
+        .lean();
+    }
+    if (banStatus === 'banned') {
+      usersResponse = await this.userModel
+        .find({
+          $or: [
+            { login: { $regex: searchLoginTerm, $options: 'i' } },
+            { email: { $regex: searchEmailTerm, $options: 'i' } },
+          ],
+          id: [...bannedUsersIds],
+        })
+        .sort({ [sortBy]: sortDirection })
+        .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+        .limit(pageSize)
+        .lean();
+    }
+
     const users = await Promise.all(
       usersResponse.map(async (user) => {
         const banInfo = await this.banInfoModel.findOne({ userId: user.id });
         return new ReturnUserDto(user, banInfo);
       }),
     );
-    const usersCount = await this.userModel
-      .find({
-        $or: [
-          { login: { $regex: searchLoginTerm, $options: 'i' } },
-          { email: { $regex: searchEmailTerm, $options: 'i' } },
-        ],
-      })
-      .countDocuments();
+    let usersCount;
+    if (banStatus === 'all') {
+      usersCount = await this.userModel
+        .find({
+          $or: [
+            { login: { $regex: searchLoginTerm, $options: 'i' } },
+            { email: { $regex: searchEmailTerm, $options: 'i' } },
+          ],
+        })
+        .countDocuments();
+    }
+    if (banStatus === 'notBanned') {
+      usersCount = await this.userModel
+        .find({
+          $or: [
+            { login: { $regex: searchLoginTerm, $options: 'i' } },
+            { email: { $regex: searchEmailTerm, $options: 'i' } },
+          ],
+          id: { $nin: [...bannedUsersIds] },
+        })
+        .countDocuments();
+    }
+    if (banStatus === 'banned') {
+      usersCount = await this.userModel
+        .find({
+          $or: [
+            { login: { $regex: searchLoginTerm, $options: 'i' } },
+            { email: { $regex: searchEmailTerm, $options: 'i' } },
+          ],
+          id: [...bannedUsersIds],
+        })
+        .countDocuments();
+    }
+
     const paginationInfo = new PaginationModel(
       pageNumber,
       pageSize,

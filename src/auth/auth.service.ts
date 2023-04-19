@@ -56,7 +56,7 @@ export class AuthService {
     const isUserBanned = await this.banInfoModel.findOne({
       userId: user.userId,
     });
-    if (isUserBanned.isBanned) throw new UnauthorizedException();
+    if (isUserBanned?.isBanned) throw new UnauthorizedException();
     const accessToken = await this.generateJwtToken(user.userId);
     const refreshToken = await this.generateRefreshToken({
       userId: user.userId,
