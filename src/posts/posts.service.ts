@@ -16,6 +16,7 @@ import { likesDislikesCountCalculation } from '../helpers/likesDieslikesCount';
 import { v4 } from 'uuid';
 import { User, UserDocument } from '../users/shemas/users.schema';
 import { Blog, BlogDocument } from '../blogs/shemas/blogs.schema';
+import { BanInfo, BanInfoDocument } from '../users/shemas/banInfo.schema';
 
 @Injectable()
 export class PostsService {
@@ -29,6 +30,7 @@ export class PostsService {
     private commentLikesModel: Model<CommentLikesDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
+    @InjectModel(BanInfo.name) private banInfoModel: Model<BanInfoDocument>,
   ) {}
 
   async findPosts(queryFilters: IQueryFilter, blogId, userId) {
@@ -43,10 +45,15 @@ export class PostsService {
       .skip(pageNumber > 0 ? (pageNumber - 1) * pageSize : 0)
       .limit(pageSize)
       .exec();
+    const bannedUsers = await this.banInfoModel.find().lean();
+    const bannedUsersIds = bannedUsers.map((m) => m.userId);
     const posts = await Promise.all(
       postsResponse.map(async (post) => {
         const postLikes = await this.postLikesModel
-          .find({ postId: post.id })
+          .find({
+            postId: post.id,
+            userId: { $nin: [...bannedUsersIds] },
+          })
           .sort({ _id: -1 });
         return new ReturnPostModel(
           {
@@ -57,7 +64,7 @@ export class PostsService {
             blogId: post.blogId,
             blogName: post.blogName,
             createdAt: post.createdAt,
-            likesCount: post.likesCount,
+            likesCount: postLikes.filter((f) => f.likeStatus === 'Like').length,
             dislikesCount: post.dislikesCount,
           },
           postLikes,
@@ -96,8 +103,13 @@ export class PostsService {
     const postResponse = await this.postModel.findOne({ id });
 
     if (postResponse) {
+      const bannedUsers = await this.banInfoModel.find().lean();
+      const bannedUsersIds = bannedUsers.map((m) => m.userId);
       const postLikes = await this.postLikesModel
-        .find({ postId: id })
+        .find({
+          postId: id,
+          userId: { $nin: [...bannedUsersIds] },
+        })
         .sort({ _id: -1 })
         .lean();
       return new ReturnPostModel(postResponse, postLikes, userId);

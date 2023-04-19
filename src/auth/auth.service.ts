@@ -19,6 +19,7 @@ import {
 } from '../users/shemas/userPassHashes.schema';
 import { UserTokens, UserTokensDocument } from './shemas/userTokens.schema';
 import { Device, DeviceDocument } from '../devices/schemas/devices.schema';
+import { BanInfo, BanInfoDocument } from '../users/shemas/banInfo.schema';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +34,7 @@ export class AuthService {
     @InjectModel(UserTokens.name)
     private userTokensModel: Model<UserTokensDocument>,
     @InjectModel(Device.name) private deviceModel: Model<DeviceDocument>,
+    @InjectModel(BanInfo.name) private banInfoModel: Model<BanInfoDocument>,
   ) {}
 
   async registration(login: string, password: string, email: string) {
@@ -51,17 +53,16 @@ export class AuthService {
   async login(loginOrEmail: string, password, ip: string, userAgent: string) {
     const deviceId = v4();
     const user = await this.validateUser(loginOrEmail, password);
+    const isUserBanned = await this.banInfoModel.findOne({
+      userId: user.userId,
+    });
+    if (isUserBanned.isBanned) throw new UnauthorizedException();
     const accessToken = await this.generateJwtToken(user.userId);
     const refreshToken = await this.generateRefreshToken({
       userId: user.userId,
       deviceId,
     });
     const refreshPayload = await this.verifyToken(refreshToken);
-    const userTokensInfoDto = {
-      userId: user.userId,
-      refreshToken,
-      invalidTokens: [],
-    };
     const sessionEntity = {
       id: deviceId,
       ip,
@@ -70,8 +71,9 @@ export class AuthService {
       createdAt: refreshPayload.iat,
       expiredAt: refreshPayload.exp,
       lastActiveDate: new Date(),
+      refreshToken,
     };
-    await this.userTokensModel.create(userTokensInfoDto);
+
     await this.deviceModel.create(sessionEntity);
     return { accessToken, refreshToken };
   }
@@ -95,7 +97,7 @@ export class AuthService {
   generateJwtToken(userId: string) {
     const payload = { sub: userId };
     return this.jwtService.signAsync(payload, {
-      expiresIn: '10s',
+      expiresIn: '10m',
       secret: process.env.JWT_SECRET,
     });
   }
@@ -109,7 +111,7 @@ export class AuthService {
   }) {
     const payload = { sub: userId, deviceId };
     return this.jwtService.signAsync(payload, {
-      expiresIn: '20s',
+      expiresIn: '20m',
       secret: process.env.JWT_SECRET,
     });
   }
@@ -221,16 +223,22 @@ export class AuthService {
       userId,
       deviceId,
     });
-
-    userTokens.refreshToken = newRefreshToken;
-    userTokens.invalidTokens.push(refreshToken);
-    userTokens.save();
+    if (userTokens) {
+      userTokens.invalidTokens.push(refreshToken);
+      userTokens.save();
+    } else {
+      await this.userTokensModel.create({
+        userId,
+        invalidTokens: [refreshToken],
+      });
+    }
 
     const newRefreshTokenPayload = await this.verifyToken(newRefreshToken);
     const sessionInfo = await this.deviceModel.findOne({ id: deviceId });
     if (!sessionInfo) throw new NotFoundException();
     sessionInfo.lastActiveDate = new Date();
     sessionInfo.expiredAt = newRefreshTokenPayload.exp;
+    sessionInfo.refreshToken = refreshToken;
     sessionInfo.save();
     return { accessToken, refreshToken: newRefreshToken };
   }
@@ -241,12 +249,19 @@ export class AuthService {
       (token) => token === refreshToken,
     );
     if (isTokenAlreadyUsed) throw new UnauthorizedException('invalid token');
-    userTokens.refreshToken = '';
-    userTokens.invalidTokens.push(refreshToken);
+
+    if (userTokens) {
+      userTokens.invalidTokens.push(refreshToken);
+      userTokens.save();
+    } else {
+      await this.userTokensModel.create({
+        userId,
+        invalidTokens: [refreshToken],
+      });
+    }
 
     const result = await this.deviceModel.deleteOne({ id: deviceId });
     if (result.deletedCount !== 1) throw new UnauthorizedException();
-    userTokens.save();
     return;
   }
 

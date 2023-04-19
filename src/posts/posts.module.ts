@@ -13,24 +13,26 @@ import {
   CommentLikes,
   CommentLikesSchema,
 } from '../comments/schemas/commentLikes.schema';
-import { Blog, BlogSchema } from '../blogs/shemas/blogs.schema';
 import { IsBlogExistValidator } from '../decorators/isBlogExist/isBlogExist.validator';
+import { Blog, BlogSchema } from '../blogs/shemas/blogs.schema';
+import { BanInfo, BanInfoSchema } from '../users/shemas/banInfo.schema';
+
+const schemas = [
+  { name: Post.name, schema: PostSchema },
+  { name: PostLikes.name, schema: PostLikesSchema },
+  { name: User.name, schema: UserSchema },
+  { name: Comment.name, schema: CommentSchema },
+  { name: CommentLikes.name, schema: CommentLikesSchema },
+  { name: User.name, schema: UserSchema },
+  { name: Blog.name, schema: BlogSchema },
+  { name: BanInfo.name, schema: BanInfoSchema },
+];
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
-    MongooseModule.forFeature([
-      { name: PostLikes.name, schema: PostLikesSchema },
-    ]),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
-    MongooseModule.forFeature([
-      { name: CommentLikes.name, schema: CommentLikesSchema },
-    ]),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature(schemas),
     forwardRef(() => BlogsModule),
     CommentsModule,
-    MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
   ],
   controllers: [PostsController],
   providers: [PostsService, JwtAuthGuard, IsBlogExistValidator],

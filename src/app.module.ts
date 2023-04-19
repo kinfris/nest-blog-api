@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BlogsModule } from './blogs/blogs.module';
 import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users.module';
 import { CommentsModule } from './comments/comments.module';
@@ -16,6 +15,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { IsBlogExistValidator } from './decorators/isBlogExist/isBlogExist.validator';
 import { DevicesModule } from './devices/devices.module';
+import { BloggerModule } from './blogger/blogger.module';
+import { BlogsModule } from './blogs/blogs.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { DevicesModule } from './devices/devices.module';
     }),
     MongooseModule.forRoot(process.env.MONGO_URL),
     BlogsModule,
+    BloggerModule,
     PostsModule,
     UsersModule,
     CommentsModule,

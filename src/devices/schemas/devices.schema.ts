@@ -22,8 +22,12 @@ export class Device {
 
   @Prop({ required: true })
   createdAt: Date;
+
   @Prop({ required: true })
   expiredAt: Date;
+
+  @Prop({ required: true })
+  refreshToken: string;
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogDocument } from './shemas/blogs.schema';
 import { Model } from 'mongoose';
-import { BlogDto, ReturnBlogModel } from './dto/blog.dto';
+import { ReturnBlogModel } from './dto/blog.dto';
 import { IQueryFilter } from '../dto/queryFilter.model';
 import { PaginationModel } from '../dto/pagination.model';
 
@@ -36,12 +36,12 @@ export class BlogsService {
     }
   }
 
-  async createBlog(name: string, description: string, websiteUrl: string) {
-    const newBlog = new BlogDto(name, description, websiteUrl);
-    const blogResponse = await this.blogModel.create(newBlog);
-    return new ReturnBlogModel(blogResponse);
-  }
-
+  // async createBlog(name: string, description: string, websiteUrl: string) {
+  //   const newBlog = new BlogDto(name, description, websiteUrl);
+  //   const blogResponse = await this.blogModel.create(newBlog);
+  //   return new ReturnBlogModel(blogResponse);
+  // }
+  //
   async findBlogById(id: string) {
     const blogResponse = await this.blogModel.findOne({ id });
     if (blogResponse) {
@@ -49,27 +49,27 @@ export class BlogsService {
     }
     throw new NotFoundException('Not found');
   }
-
-  async updateBlog(
-    id: string,
-    name: string,
-    description: string,
-    websiteUrl: string,
-  ) {
-    const blog = await this.blogModel.findOne({ id });
-    if (blog) {
-      blog.name = name;
-      blog.description = description;
-      blog.websiteUrl = websiteUrl;
-      blog.save();
-      return;
-    }
-    throw new NotFoundException('Not found');
-  }
-
-  async deleteBlog(id: string) {
-    const response = await this.blogModel.deleteOne({ id });
-    if (response.deletedCount !== 1) throw new NotFoundException('Not found');
-    return;
-  }
+  //
+  // async updateBlog(
+  //   id: string,
+  //   name: string,
+  //   description: string,
+  //   websiteUrl: string,
+  // ) {
+  //   const blog = await this.blogModel.findOne({ id });
+  //   if (blog) {
+  //     blog.name = name;
+  //     blog.description = description;
+  //     blog.websiteUrl = websiteUrl;
+  //     blog.save();
+  //     return;
+  //   }
+  //   throw new NotFoundException('Not found');
+  // }
+  //
+  // async deleteBlog(id: string) {
+  //   const response = await this.blogModel.deleteOne({ id });
+  //   if (response.deletedCount !== 1) throw new NotFoundException('Not found');
+  //   return;
+  // }
 }

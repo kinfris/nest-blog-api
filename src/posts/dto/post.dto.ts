@@ -24,7 +24,7 @@ export class ReturnPostModel {
       userStatus = postLikes.find((postLike) => userId === postLike.userId);
     }
     this.extendedLikesInfo = {
-      likesCount: postInfo.likesCount,
+      likesCount: postLikes.filter((f) => f.likeStatus === 'Like').length,
       dislikesCount: postInfo.dislikesCount,
       myStatus: userStatus?.likeStatus ?? 'None',
       newestLikes: postLikes

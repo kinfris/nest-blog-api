@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   forwardRef,
   Get,
   HttpCode,
@@ -20,7 +19,6 @@ import { CommentsService } from '../comments/comments.service';
 import { UpdateDto } from '../comments/comments.conroller';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.param.decorator';
-import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 import { IsIn, IsString, MaxLength } from 'class-validator';
 import { IsNotEmptyString } from '../decorators/isNotEmptyString';
 import { IsBlogExists } from '../decorators/isBlogExist/isBlogExist.decorator';
@@ -61,21 +59,21 @@ export class PostsController {
     return this.postsService.findPosts(queryFilters, null, currentUser?.userId);
   }
 
-  @UseGuards(BasicAuthGuard)
-  @Post()
-  async createPost(@Body() dto: PostDto) {
-    const blog = await this.blogsService.findBlogById(dto.blogId);
-    if (blog) {
-      return await this.postsService.createPost(
-        dto.title,
-        dto.shortDescription,
-        dto.content,
-        dto.blogId,
-        blog.name,
-      );
-    }
-    throw new NotFoundException('Not Found');
-  }
+  // @UseGuards(BasicAuthGuard)
+  // @Post()
+  // async createPost(@Body() dto: PostDto) {
+  //   const blog = await this.blogsService.findBlogById(dto.blogId);
+  //   if (blog) {
+  //     return await this.postsService.createPost(
+  //       dto.title,
+  //       dto.shortDescription,
+  //       dto.content,
+  //       dto.blogId,
+  //       blog.name,
+  //     );
+  //   }
+  //   throw new NotFoundException('Not Found');
+  // }
 
   @Get('/:id')
   async findPostById(
@@ -85,21 +83,21 @@ export class PostsController {
     return await this.postsService.findPostById(id, currentUser?.userId);
   }
 
-  @UseGuards(BasicAuthGuard)
-  @Put('/:id')
-  @HttpCode(204)
-  async updatePost(@Param() { id }: { id: string }, @Body() dto: PostDto) {
-    await this.postsService.updatePost(id, dto);
-    return;
-  }
+  // @UseGuards(BasicAuthGuard)
+  // @Put('/:id')
+  // @HttpCode(204)
+  // async updatePost(@Param() { id }: { id: string }, @Body() dto: PostDto) {
+  //   await this.postsService.updatePost(id, dto);
+  //   return;
+  // }
 
-  @UseGuards(BasicAuthGuard)
-  @Delete('/:id')
-  @HttpCode(204)
-  async deletePost(@Param() { id }: { id: string }) {
-    await this.postsService.deletePost(id);
-    return;
-  }
+  // @UseGuards(BasicAuthGuard)
+  // @Delete('/:id')
+  // @HttpCode(204)
+  // async deletePost(@Param() { id }: { id: string }) {
+  //   await this.postsService.deletePost(id);
+  //   return;
+  // }
 
   @Get('/:postId/comments')
   async getPostComments(

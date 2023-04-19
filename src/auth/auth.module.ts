@@ -18,6 +18,15 @@ import {
 } from '../users/shemas/userPassHashes.schema';
 import { UserTokens, UserTokensSchema } from './shemas/userTokens.schema';
 import { Device, DeviceSchema } from '../devices/schemas/devices.schema';
+import { BanInfo, BanInfoSchema } from '../users/shemas/banInfo.schema';
+
+const schemas = [
+  { name: Email.name, schema: EmailSchema },
+  { name: UserHashes.name, schema: UserHashesSchema },
+  { name: UserTokens.name, schema: UserTokensSchema },
+  { name: Device.name, schema: DeviceSchema },
+  { name: BanInfo.name, schema: BanInfoSchema },
+];
 
 @Module({
   imports: [
@@ -29,14 +38,7 @@ import { Device, DeviceSchema } from '../devices/schemas/devices.schema';
       global: true,
       secret: process.env.JWT_SECRET,
     }),
-    MongooseModule.forFeature([{ name: Email.name, schema: EmailSchema }]),
-    MongooseModule.forFeature([
-      { name: UserHashes.name, schema: UserHashesSchema },
-    ]),
-    MongooseModule.forFeature([
-      { name: UserTokens.name, schema: UserTokensSchema },
-    ]),
-    MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
+    MongooseModule.forFeature(schemas),
   ],
   controllers: [AuthController],
   providers: [
