@@ -37,6 +37,8 @@ export class CommentsService {
     if (comment) {
       let commentLike: any = {};
       if (userId) {
+        const isUserBanned = await this.banInfoModel.findOne({ userId });
+        if (isUserBanned?.isBanned) throw new NotFoundException();
         commentLike = await this.commentLikesModel.findOne({
           commentId: id,
           userId,
