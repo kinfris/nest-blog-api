@@ -128,6 +128,7 @@ export class BloggerService {
 
   async deleteBlog(id: string, userId: string) {
     const blog = await this.blogModel.findOne({ id });
+    if (!blog) throw new NotFoundException();
     if (blog?.bloggerId !== userId) throw new ForbiddenException();
     const response = await this.blogModel.deleteOne({ id });
     if (response.deletedCount !== 1) throw new NotFoundException('Not found');
