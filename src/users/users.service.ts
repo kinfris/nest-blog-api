@@ -108,7 +108,7 @@ export class UsersService {
         .limit(pageSize)
         .lean();
     }
-    const bannedUsers = await this.banInfoModel.find().lean();
+    const bannedUsers = await this.banInfoModel.find({ isBanned: true }).lean();
     const bannedUsersIds = bannedUsers.map((m) => m.userId);
     if (banStatus === 'notBanned') {
       usersResponse = await this.userModel

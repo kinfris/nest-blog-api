@@ -34,10 +34,6 @@ export class CommentsService {
 
   async findCommentById(id: string, userId = '') {
     const comment = await this.commentModel.findOne({ id }).lean();
-    const isPostCreatorBanned = await this.banInfoModel.findOne({
-      userId: comment.userId,
-    });
-    if (isPostCreatorBanned?.isBanned) throw new NotFoundException();
     if (comment) {
       let commentLike: any = {};
       if (userId) {
@@ -46,8 +42,28 @@ export class CommentsService {
           userId,
         });
       }
+      const bannedUsers = await this.banInfoModel.find({ isBanned: true });
+      const bannedUsersIds = bannedUsers.map((m) => m.userId);
+      const likesCount = await this.commentLikesModel
+        .find({
+          userId: { $nin: [...bannedUsersIds] },
+        })
+        .countDocuments();
       const likeStatus = commentLike?.likeStatus ?? 'None';
-      return new CommentReturnDto(comment, likeStatus);
+      return {
+        id: comment.id,
+        content: comment.content,
+        commentatorInfo: {
+          userId: comment.userId,
+          userLogin: comment.userLogin,
+        },
+        createdAt: comment.createdAt,
+        likesInfo: {
+          likesCount: likesCount,
+          dislikesCount: comment.dislikesCount,
+          myStatus: likeStatus,
+        },
+      };
     }
   }
 

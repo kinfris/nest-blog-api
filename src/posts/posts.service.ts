@@ -45,7 +45,7 @@ export class PostsService {
       .skip(pageNumber > 0 ? (pageNumber - 1) * pageSize : 0)
       .limit(pageSize)
       .exec();
-    const bannedUsers = await this.banInfoModel.find().lean();
+    const bannedUsers = await this.banInfoModel.find({ isBanned: true }).lean();
     const bannedUsersIds = bannedUsers.map((m) => m.userId);
     const posts = await Promise.all(
       postsResponse.map(async (post) => {
@@ -103,7 +103,9 @@ export class PostsService {
     const postResponse = await this.postModel.findOne({ id });
 
     if (postResponse) {
-      const bannedUsers = await this.banInfoModel.find().lean();
+      const bannedUsers = await this.banInfoModel
+        .find({ isBanned: true })
+        .lean();
       const bannedUsersIds = bannedUsers.map((m) => m.userId);
       const postLikes = await this.postLikesModel
         .find({
