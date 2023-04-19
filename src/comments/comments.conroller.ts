@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  NotFoundException,
   Param,
   Put,
   UseGuards,
@@ -31,14 +30,9 @@ export class CommentsController {
   constructor(private commentService: CommentsService) {}
 
   @Get('/:id')
-  async findCommentById(
-    @Param() { id }: { id: string },
-    @CurrentUser() currentUser,
-  ) {
+  findCommentById(@Param() { id }: { id: string }, @CurrentUser() currentUser) {
     const userId = currentUser?.userId || '';
-    const comment = await this.commentService.findCommentById(id, userId);
-    //if (!comment) throw new NotFoundException('Not Found');
-    return comment;
+    return this.commentService.findCommentById(id, userId);
   }
 
   @UseGuards(JwtAuthGuard)

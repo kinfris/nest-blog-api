@@ -34,41 +34,40 @@ export class CommentsService {
 
   async findCommentById(id: string, userId = '') {
     const comment = await this.commentModel.findOne({ id }).lean();
-    if (comment) {
-      let commentLike: any = {};
-      if (userId) {
-        const isUserBanned = await this.banInfoModel.findOne({
-          userId: comment.userId,
-        });
-        if (isUserBanned?.isBanned) throw new NotFoundException();
-        commentLike = await this.commentLikesModel.findOne({
-          commentId: id,
-          userId,
-        });
-      }
-      const bannedUsers = await this.banInfoModel.find({ isBanned: true });
-      const bannedUsersIds = bannedUsers.map((m) => m.userId);
-      const likesCount = await this.commentLikesModel
-        .find({
-          userId: { $nin: [...bannedUsersIds] },
-        })
-        .countDocuments();
-      const likeStatus = commentLike?.likeStatus ?? 'None';
-      return {
-        id: comment.id,
-        content: comment.content,
-        commentatorInfo: {
-          userId: comment.userId,
-          userLogin: comment.userLogin,
-        },
-        createdAt: comment.createdAt,
-        likesInfo: {
-          likesCount: likesCount,
-          dislikesCount: comment.dislikesCount,
-          myStatus: likeStatus,
-        },
-      };
+    if (!comment) throw new NotFoundException('Not Found');
+    const isUserBanned = await this.banInfoModel.findOne({
+      userId: comment.userId,
+    });
+    if (isUserBanned?.isBanned) throw new NotFoundException();
+    let commentLike: any = {};
+    if (userId) {
+      commentLike = await this.commentLikesModel.findOne({
+        commentId: id,
+        userId,
+      });
     }
+    const bannedUsers = await this.banInfoModel.find({ isBanned: true });
+    const bannedUsersIds = bannedUsers.map((m) => m.userId);
+    const likesCount = await this.commentLikesModel
+      .find({
+        userId: { $nin: [...bannedUsersIds] },
+      })
+      .countDocuments();
+    const likeStatus = commentLike?.likeStatus ?? 'None';
+    return {
+      id: comment.id,
+      content: comment.content,
+      commentatorInfo: {
+        userId: comment.userId,
+        userLogin: comment.userLogin,
+      },
+      createdAt: comment.createdAt,
+      likesInfo: {
+        likesCount: likesCount,
+        dislikesCount: comment.dislikesCount,
+        myStatus: likeStatus,
+      },
+    };
   }
 
   async findPostComments(
