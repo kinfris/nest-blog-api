@@ -45,7 +45,7 @@ export class ReturnBlogModelForSA {
     };
     this.banInfo = {
       isBanned: banInfo?.isBanned ?? false,
-      banDate: banInfo?.banDate ?? false,
+      banDate: banInfo?.banDate ?? null,
     };
   }
 }
