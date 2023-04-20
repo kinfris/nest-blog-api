@@ -18,28 +18,27 @@ import {
 } from '../users/shemas/userPassHashes.schema';
 import { Email, EmailSchema } from '../email/schemas/email.schema';
 import { UserTokens, UserTokensSchema } from '../auth/shemas/userTokens.schema';
+import { BanInfo, BanInfoSchema } from '../users/shemas/banInfo.schema';
+import { BlogBan, BlogBanSchema } from '../blogs/shemas/blogBan.schema';
+
+const scheme = [
+  { name: User.name, schema: UserSchema },
+  { name: Post.name, schema: PostSchema },
+  { name: PostLikes.name, schema: PostLikesSchema },
+  { name: Comment.name, schema: CommentSchema },
+  { name: CommentLikes.name, schema: CommentLikesSchema },
+  { name: Blog.name, schema: BlogSchema },
+  { name: Device.name, schema: DeviceSchema },
+  { name: UserHashes.name, schema: UserHashesSchema },
+  { name: Email.name, schema: EmailSchema },
+  { name: UserTokens.name, schema: UserTokensSchema },
+  { name: UserTokens.name, schema: UserTokensSchema },
+  { name: BanInfo.name, schema: BanInfoSchema },
+  { name: BlogBan.name, schema: BlogBanSchema },
+];
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
-    MongooseModule.forFeature([
-      { name: PostLikes.name, schema: PostLikesSchema },
-    ]),
-    MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
-    MongooseModule.forFeature([
-      { name: CommentLikes.name, schema: CommentLikesSchema },
-    ]),
-    MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
-    MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
-    MongooseModule.forFeature([
-      { name: UserHashes.name, schema: UserHashesSchema },
-    ]),
-    MongooseModule.forFeature([{ name: Email.name, schema: EmailSchema }]),
-    MongooseModule.forFeature([
-      { name: UserTokens.name, schema: UserTokensSchema },
-    ]),
-  ],
+  imports: [MongooseModule.forFeature(scheme)],
   controllers: [TestController],
   providers: [TestService],
 })

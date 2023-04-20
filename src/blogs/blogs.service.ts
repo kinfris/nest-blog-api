@@ -5,10 +5,15 @@ import { Model } from 'mongoose';
 import { ReturnBlogModel, ReturnBlogModelForSA } from './dto/blog.dto';
 import { QueryFilterModel } from '../dto/queryFilter.model';
 import { PaginationModel } from '../dto/pagination.model';
+import { BlogBan, BlogBanDocument } from './shemas/blogBan.schema';
 
 @Injectable()
 export class BlogsService {
-  constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) {}
+  constructor(
+    @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
+    @InjectModel(BlogBan.name)
+    private blogBanModel: Model<BlogBanDocument>,
+  ) {}
 
   async findBlogs(queryFilters: QueryFilterModel) {
     const { blogResponse, ...paginationInfo } = await this.findBlogsWithPaging(
@@ -83,5 +88,29 @@ export class BlogsService {
       blogsCount,
     );
     return { ...paginationInfo, blogResponse };
+  }
+
+  async banUnBanBlog(blogId: string, isBanned: boolean) {
+    const banInfo = await this.blogBanModel.findOne({ blogId });
+    if (!isBanned) {
+      if (!banInfo) throw new NotFoundException();
+      banInfo.banDate = null;
+      banInfo.isBanned = false;
+      banInfo.save();
+      return;
+    }
+    if (banInfo) {
+      banInfo.isBanned = true;
+      banInfo.banDate = new Date();
+      banInfo.save();
+    } else {
+      const banInfoEntity = {
+        blogId,
+        isBanned: true,
+        banDate: new Date(),
+      };
+      await this.blogBanModel.create(banInfoEntity);
+    }
+    return;
   }
 }

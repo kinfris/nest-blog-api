@@ -214,10 +214,6 @@ export class UsersService {
         banReason: banInfo.banReason,
         banDate: banInfo.banDate,
       });
-      banInfo.banHistory.push({
-        banReason: banInfo.banReason,
-        banDate: banInfo.banDate,
-      });
       banInfo.banDate = null;
       banInfo.banReason = null;
       banInfo.isBanned = false;

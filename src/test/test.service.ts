@@ -23,6 +23,8 @@ import {
   UserTokens,
   UserTokensDocument,
 } from '../auth/shemas/userTokens.schema';
+import { BanInfo, BanInfoDocument } from '../users/shemas/banInfo.schema';
+import { BlogBan, BlogBanDocument } from '../blogs/shemas/blogBan.schema';
 
 @Injectable()
 export class TestService {
@@ -42,6 +44,10 @@ export class TestService {
     @InjectModel(Email.name) private emailModel: Model<EmailDocument>,
     @InjectModel(UserTokens.name)
     private userTokensModel: Model<UserTokensDocument>,
+    @InjectModel(BanInfo.name)
+    private banInfoModel: Model<BanInfoDocument>,
+    @InjectModel(BlogBan.name)
+    private blogBanModel: Model<BlogBanDocument>,
   ) {}
 
   async clearDb() {
@@ -55,5 +61,7 @@ export class TestService {
     await this.userHashesModel.deleteMany({});
     await this.emailModel.deleteMany({});
     await this.userTokensModel.deleteMany({});
+    await this.banInfoModel.deleteMany({});
+    await this.blogBanModel.deleteMany({});
   }
 }

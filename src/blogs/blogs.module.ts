@@ -4,13 +4,17 @@ import { BlogsController } from './blogs.conroller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Blog, BlogSchema } from './shemas/blogs.schema';
 import { PostsModule } from '../posts/posts.module';
+import { SaBlogsController } from './saBlogs.conroller';
+import { BlogBan, BlogBanSchema } from './shemas/blogBan.schema';
+
+const scheme = [
+  { name: Blog.name, schema: BlogSchema },
+  { name: BlogBan.name, schema: BlogBanSchema },
+];
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
-    forwardRef(() => PostsModule),
-  ],
-  controllers: [BlogsController],
+  imports: [MongooseModule.forFeature(scheme), forwardRef(() => PostsModule)],
+  controllers: [BlogsController, SaBlogsController],
   providers: [BlogsService],
   exports: [BlogsService],
 })
