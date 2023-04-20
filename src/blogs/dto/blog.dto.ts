@@ -1,5 +1,3 @@
-import { v4 } from 'uuid';
-
 export class ReturnBlogModel {
   id;
   name;
@@ -29,8 +27,12 @@ export class ReturnBlogModelForSA {
     userId: string;
     userLogin: string;
   };
+  banInfo: {
+    isBanned: boolean;
+    banDate: Date | null;
+  };
 
-  constructor(blog) {
+  constructor(blog, banInfo) {
     this.id = blog.id;
     this.name = blog.name;
     this.description = blog.description;
@@ -40,6 +42,10 @@ export class ReturnBlogModelForSA {
     this.blogOwnerInfo = {
       userId: blog.bloggerId,
       userLogin: blog.bloggerLogin,
+    };
+    this.banInfo = {
+      isBanned: banInfo?.isBanned ?? false,
+      banDate: banInfo?.banDate ?? false,
     };
   }
 }

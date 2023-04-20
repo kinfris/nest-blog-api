@@ -64,8 +64,15 @@ export class BlogsService {
     const { blogResponse, ...paginationInfo } = await this.findBlogsWithPaging(
       queryFilters,
     );
-    const blogs = blogResponse.map((blog) => new ReturnBlogModelForSA(blog));
-    return { ...paginationInfo, items: blogs };
+    const blogsWithBanInfo = Promise.all(
+      blogResponse.map(async (blog) => {
+        const banInfo = await this.blogBanModel
+          .findOne({ blogId: blog.id })
+          .lean();
+        return new ReturnBlogModelForSA(blog, banInfo);
+      }),
+    );
+    return { ...paginationInfo, items: blogsWithBanInfo };
   }
 
   async findBlogsWithPaging(queryFilters: QueryFilterModel) {
