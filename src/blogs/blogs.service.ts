@@ -64,7 +64,7 @@ export class BlogsService {
     const { blogResponse, ...paginationInfo } = await this.findBlogsWithPaging(
       queryFilters,
     );
-    const blogsWithBanInfo = Promise.all(
+    const blogsWithBanInfo = await Promise.all(
       blogResponse.map(async (blog) => {
         const banInfo = await this.blogBanModel
           .findOne({ blogId: blog.id })
@@ -72,6 +72,7 @@ export class BlogsService {
         return new ReturnBlogModelForSA(blog, banInfo);
       }),
     );
+
     return { ...paginationInfo, items: blogsWithBanInfo };
   }
 
