@@ -6,6 +6,7 @@ import {
   HttpCode,
   Inject,
   Param,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -36,7 +37,7 @@ export class BloggerUsersController {
   ) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('/:id/ban')
+  @Put('/:id/ban')
   @HttpCode(204)
   banUnBanUser(
     @Body() banUnBanDto: BanUnBanDto,
