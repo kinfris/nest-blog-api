@@ -20,6 +20,10 @@ import { Email, EmailSchema } from '../email/schemas/email.schema';
 import { UserTokens, UserTokensSchema } from '../auth/shemas/userTokens.schema';
 import { BanInfo, BanInfoSchema } from '../users/shemas/banInfo.schema';
 import { BlogBan, BlogBanSchema } from '../blogs/shemas/blogBan.schema';
+import {
+  UsersBannedForBLog,
+  UsersBannedForBLogSchema,
+} from '../blogger/scheme/usrsBannedForBlog.schema';
 
 const scheme = [
   { name: User.name, schema: UserSchema },
@@ -35,6 +39,7 @@ const scheme = [
   { name: UserTokens.name, schema: UserTokensSchema },
   { name: BanInfo.name, schema: BanInfoSchema },
   { name: BlogBan.name, schema: BlogBanSchema },
+  { name: UsersBannedForBLog.name, schema: UsersBannedForBLogSchema },
 ];
 
 @Module({

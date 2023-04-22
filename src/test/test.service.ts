@@ -25,6 +25,7 @@ import {
 } from '../auth/shemas/userTokens.schema';
 import { BanInfo, BanInfoDocument } from '../users/shemas/banInfo.schema';
 import { BlogBan, BlogBanDocument } from '../blogs/shemas/blogBan.schema';
+import { UsersBannedForBLog } from '../blogger/scheme/usrsBannedForBlog.schema';
 
 @Injectable()
 export class TestService {
@@ -48,6 +49,8 @@ export class TestService {
     private banInfoModel: Model<BanInfoDocument>,
     @InjectModel(BlogBan.name)
     private blogBanModel: Model<BlogBanDocument>,
+    @InjectModel(UsersBannedForBLog.name)
+    private usersBannedForBLogModel: Model<UsersBannedForBLog>,
   ) {}
 
   async clearDb() {
@@ -63,5 +66,6 @@ export class TestService {
     await this.userTokensModel.deleteMany({});
     await this.banInfoModel.deleteMany({});
     await this.blogBanModel.deleteMany({});
+    await this.usersBannedForBLogModel.deleteMany({});
   }
 }

@@ -145,7 +145,7 @@ export class BloggerService {
     { blogId, isBanned, banReason }: BanUnBanDto,
   ) {
     const blog = await this.blogModel.findOne({ id: blogId }).lean();
-    if (blog.bloggerId !== ownerUserId) throw new ForbiddenException();
+    if (blog?.bloggerId !== ownerUserId) throw new ForbiddenException();
 
     const banInfo = await this.usersBannedForBLogModel.findOne({
       userId: banUserId,
@@ -169,7 +169,7 @@ export class BloggerService {
       const banInfoEntity = {
         blogId,
         userId: banUserId,
-        login: userInfo.login,
+        userLogin: userInfo.login,
         isBanned: true,
         banReason,
         banDate: new Date(),

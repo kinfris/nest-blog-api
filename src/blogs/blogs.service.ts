@@ -16,9 +16,33 @@ export class BlogsService {
   ) {}
 
   async findBlogs(queryFilters: QueryFilterModel) {
-    const { blogResponse, ...paginationInfo } = await this.findBlogsWithPaging(
-      queryFilters,
+    const { pageNumber, pageSize, searchNameTerm, sortBy, sortDirection } =
+      queryFilters;
+    const blogBanInfo = await this.blogBanModel.find({ isBanned: true }).lean();
+    const bannedBlogsIds = blogBanInfo.map((m) => m.blogId);
+
+    const blogResponse = await this.blogModel
+      .find({
+        name: { $regex: searchNameTerm, $options: 'i' },
+        id: { $nin: [...bannedBlogsIds] },
+      })
+      .sort({ [sortBy]: sortDirection })
+      .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+      .limit(pageSize)
+      .lean();
+
+    const blogsCount = await this.blogModel
+      .find({
+        name: { $regex: searchNameTerm, $options: 'i' },
+        id: { $nin: [...bannedBlogsIds] },
+      })
+      .countDocuments();
+    const paginationInfo = new PaginationModel(
+      pageNumber,
+      pageSize,
+      blogsCount,
     );
+
     const blogs = blogResponse.map((blog) => new ReturnBlogModel(blog));
     return { ...paginationInfo, items: blogs };
   }
@@ -30,11 +54,13 @@ export class BlogsService {
   // }
 
   async findBlogById(id: string) {
+    const isBlogBanned = await this.blogBanModel.findOne({ blogId: id }).lean();
+    if (!isBlogBanned) throw new NotFoundException();
+
     const blogResponse = await this.blogModel.findOne({ id });
-    if (blogResponse) {
-      return new ReturnBlogModel(blogResponse);
-    }
-    throw new NotFoundException('Not found');
+    if (!blogResponse) throw new NotFoundException('Not found');
+
+    return new ReturnBlogModel(blogResponse);
   }
 
   //
