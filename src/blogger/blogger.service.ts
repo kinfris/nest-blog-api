@@ -7,16 +7,20 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { BlogDto, ReturnBlogModel } from './dto/blogger.dto';
-import { IQueryFilter } from '../dto/queryFilter.model';
+import { IQueryFilter, QueryFilterModel } from '../dto/queryFilter.model';
 import { PaginationModel } from '../dto/pagination.model';
 import { Blog, BlogDocument } from '../blogs/shemas/blogs.schema';
 import { User, UserDocument } from '../users/shemas/users.schema';
+import { UsersBannedForBLog } from './scheme/usrsBannedForBlog.schema';
+import { BanUnBanDto } from './bloggerUsers.conroller';
 
 @Injectable()
 export class BloggerService {
   constructor(
     @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(UsersBannedForBLog.name)
+    private usersBannedForBLogModel: Model<UsersBannedForBLog>,
   ) {}
 
   // async findBlogs(queryFilters: IQueryFilter) {
@@ -133,5 +137,85 @@ export class BloggerService {
     const response = await this.blogModel.deleteOne({ id });
     if (response.deletedCount !== 1) throw new NotFoundException('Not found');
     return;
+  }
+
+  async banUnBanUser(
+    ownerUserId: string,
+    banUserId: string,
+    { blogId, isBanned, banReason }: BanUnBanDto,
+  ) {
+    const blog = await this.blogModel.findOne({ id: blogId }).lean();
+    if (blog.bloggerId !== ownerUserId) throw new ForbiddenException();
+
+    const banInfo = await this.usersBannedForBLogModel.findOne({
+      userId: banUserId,
+    });
+    if (!isBanned) {
+      if (!banInfo) throw new NotFoundException();
+      banInfo.banReason = null;
+      banInfo.banDate = null;
+      banInfo.isBanned = false;
+      banInfo.save();
+      return;
+    }
+    if (banInfo) {
+      banInfo.banReason = banReason;
+      banInfo.banDate = new Date();
+      banInfo.isBanned = true;
+      banInfo.save();
+    } else {
+      const userInfo = await this.userModel.findOne({ id: banUserId }).lean();
+      if (!userInfo) throw new NotFoundException();
+      const banInfoEntity = {
+        blogId,
+        userId: banUserId,
+        login: userInfo.login,
+        isBanned: true,
+        banReason,
+        banDate: new Date(),
+      };
+      await this.usersBannedForBLogModel.create(banInfoEntity);
+    }
+
+    return;
+  }
+
+  async getBannedUsers(queryFilters: QueryFilterModel, blogId: string) {
+    const { pageNumber, pageSize, searchLoginTerm, sortBy, sortDirection } =
+      queryFilters;
+    const bannedUsersForBlog = await this.usersBannedForBLogModel
+      .find({
+        blogId,
+        userLogin: { $regex: searchLoginTerm, $options: 'i' },
+      })
+      .sort({ [sortBy]: sortDirection })
+      .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+      .limit(pageSize)
+      .lean();
+
+    const bannedUsersCount = await this.usersBannedForBLogModel
+      .find({
+        blogId,
+        userLogin: { $regex: searchLoginTerm, $options: 'i' },
+      })
+      .countDocuments();
+
+    const paginationInfo = new PaginationModel(
+      pageNumber,
+      pageSize,
+      bannedUsersCount,
+    );
+    return {
+      ...paginationInfo,
+      items: bannedUsersForBlog.map((m) => ({
+        id: m.userId,
+        login: m.userLogin,
+        banInfo: {
+          isBanned: m.isBanned,
+          banDate: m.banDate,
+          banReason: m.banReason,
+        },
+      })),
+    };
   }
 }

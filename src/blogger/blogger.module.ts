@@ -5,15 +5,21 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PostsModule } from '../posts/posts.module';
 import { Blog, BlogSchema } from '../blogs/shemas/blogs.schema';
 import { User, UserSchema } from '../users/shemas/users.schema';
+import { BloggerUsersController } from './bloggerUsers.conroller';
+import {
+  UsersBannedForBLog,
+  UsersBannedForBLogSchema,
+} from './scheme/usrsBannedForBlog.schema';
 
 const schemas = [
   { name: Blog.name, schema: BlogSchema },
   { name: User.name, schema: UserSchema },
+  { name: UsersBannedForBLog.name, schema: UsersBannedForBLogSchema },
 ];
 
 @Module({
   imports: [MongooseModule.forFeature(schemas), forwardRef(() => PostsModule)],
-  controllers: [BloggersController],
+  controllers: [BloggersController, BloggerUsersController],
   providers: [BloggerService],
   exports: [BloggerService],
 })
