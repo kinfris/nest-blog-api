@@ -78,8 +78,11 @@ export class BloggersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:id')
-  async getBlogById(@Param() { id }: { id: string }) {
-    return await this.bloggerService.findBlogById(id);
+  async getBlogById(
+    @Param() { id }: { id: string },
+    @CurrentUser() currentUser,
+  ) {
+    return await this.bloggerService.findBlogById(id, currentUser?.userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -118,7 +121,7 @@ export class BloggersController {
     @Query() queryDto: QueryType,
     @CurrentUser() currentUser,
   ) {
-    await this.bloggerService.findBlogById(blogId);
+    await this.bloggerService.findBlogById(blogId, currentUser?.userId);
 
     const queryFilters = new QueryFilterModel(queryDto);
     return this.postsService.findPosts(

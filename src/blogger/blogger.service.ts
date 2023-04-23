@@ -102,15 +102,16 @@ export class BloggerService {
     return new ReturnBlogModel(blogResponse);
   }
 
-  async findBlogById(id: string) {
+  async findBlogById(id: string, userId: string) {
     const isBLogBanned = await this.blogBanModel.findOne({ blogId: id });
     if (isBLogBanned?.isBanned) throw new NotFoundException();
 
     const blogResponse = await this.blogModel.findOne({ id });
-    if (blogResponse) {
-      return new ReturnBlogModel(blogResponse);
-    }
-    throw new NotFoundException('Not found');
+
+    if (!blogResponse) throw new NotFoundException('Not found');
+    if (blogResponse?.bloggerId !== userId) throw new ForbiddenException();
+
+    return new ReturnBlogModel(blogResponse);
   }
 
   async isBlogByExist(id: string) {

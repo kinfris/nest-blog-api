@@ -53,7 +53,12 @@ export class BloggerUsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/blog/:blogId')
-  getBannedUsers(@Query() queryDto: QueryType, @Param() { blogId }) {
+  async getBannedUsers(
+    @Query() queryDto: QueryType,
+    @Param() { blogId },
+    @CurrentUser() currentUser,
+  ) {
+    await this.bloggerService.findBlogById(blogId, currentUser?.userId);
     const queryFilters = new QueryFilterModel(queryDto);
     return this.bloggerService.getBannedUsers(queryFilters, blogId);
   }

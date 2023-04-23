@@ -19,6 +19,7 @@ import { likesDislikesCountCalculation } from '../helpers/likesDieslikesCount';
 import { v4 } from 'uuid';
 import { Post, PostDocument } from '../posts/schemas/posts.schema';
 import { BanInfo, BanInfoDocument } from '../users/shemas/banInfo.schema';
+import { UsersBannedForBLog } from '../blogger/scheme/usrsBannedForBlog.schema';
 
 @Injectable()
 export class CommentsService {
@@ -30,6 +31,8 @@ export class CommentsService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
     @InjectModel(BanInfo.name) private banInfoModel: Model<BanInfoDocument>,
+    @InjectModel(UsersBannedForBLog.name)
+    private usersBannedForBLogModel: Model<UsersBannedForBLog>,
   ) {}
 
   async findCommentById(id: string, userId = '') {
@@ -116,6 +119,10 @@ export class CommentsService {
   }
 
   async createComment(postId: string, content: string, userId: string) {
+    const isUserBannedForBLog = await this.usersBannedForBLogModel.findOne({
+      userId,
+    });
+    if (isUserBannedForBLog) throw new ForbiddenException();
     const user = await this.userModel.findOne({ id: userId }).lean();
     const post = await this.postModel.findOne({ id: postId });
     if (!user || !post) throw new NotFoundException('Not Found');

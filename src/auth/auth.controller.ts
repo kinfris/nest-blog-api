@@ -97,7 +97,6 @@ export class AuthController {
   }
 
   @Post('login')
-  @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
   async login(
     @Body() dto: LoginDto,
