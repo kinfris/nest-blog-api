@@ -6,8 +6,6 @@ import {
   forwardRef,
   Get,
   HttpCode,
-  HttpException,
-  HttpStatus,
   Inject,
   Param,
   Post,
@@ -81,11 +79,7 @@ export class BloggersController {
   @UseGuards(JwtAuthGuard)
   @Get('/:id')
   async getBlogById(@Param() { id }: { id: string }) {
-    const blog = await this.bloggerService.findBlogById(id);
-    if (blog) {
-      return blog;
-    }
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    return await this.bloggerService.findBlogById(id);
   }
 
   @UseGuards(JwtAuthGuard)

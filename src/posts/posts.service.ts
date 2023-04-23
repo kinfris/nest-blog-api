@@ -21,6 +21,7 @@ import { v4 } from 'uuid';
 import { User, UserDocument } from '../users/shemas/users.schema';
 import { Blog, BlogDocument } from '../blogs/shemas/blogs.schema';
 import { BanInfo, BanInfoDocument } from '../users/shemas/banInfo.schema';
+import { BlogBan, BlogBanDocument } from '../blogs/shemas/blogBan.schema';
 
 @Injectable()
 export class PostsService {
@@ -35,6 +36,8 @@ export class PostsService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
     @InjectModel(BanInfo.name) private banInfoModel: Model<BanInfoDocument>,
+    @InjectModel(BlogBan.name)
+    private blogBanModel: Model<BlogBanDocument>,
   ) {}
 
   async findPosts(queryFilters: IQueryFilter, blogId, userId) {
@@ -105,6 +108,11 @@ export class PostsService {
 
   async findPostById(id: string, userId: string | null) {
     const postResponse = await this.postModel.findOne({ id });
+
+    const banInfo = await this.blogBanModel.findOne({
+      blogId: postResponse.blogId,
+    });
+    if (banInfo?.isBanned) throw new NotFoundException();
 
     if (postResponse) {
       const bannedUsers = await this.banInfoModel

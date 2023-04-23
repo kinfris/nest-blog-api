@@ -27,7 +27,7 @@ export class BlogsService {
         id: { $nin: [...bannedBlogsIds] },
       })
       .sort({ [sortBy]: sortDirection })
-      .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+      .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .lean();
 
@@ -55,7 +55,7 @@ export class BlogsService {
 
   async findBlogById(id: string) {
     const isBlogBanned = await this.blogBanModel.findOne({ blogId: id }).lean();
-    if (!isBlogBanned) throw new NotFoundException();
+    if (isBlogBanned?.isBanned) throw new NotFoundException();
 
     const blogResponse = await this.blogModel.findOne({ id });
     if (!blogResponse) throw new NotFoundException('Not found');
@@ -108,7 +108,7 @@ export class BlogsService {
     const blogResponse = await this.blogModel
       .find({ name: { $regex: searchNameTerm, $options: 'i' } })
       .sort({ [sortBy]: sortDirection })
-      .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+      .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .lean();
 

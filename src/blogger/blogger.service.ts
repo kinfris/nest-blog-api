@@ -13,6 +13,7 @@ import { Blog, BlogDocument } from '../blogs/shemas/blogs.schema';
 import { User, UserDocument } from '../users/shemas/users.schema';
 import { UsersBannedForBLog } from './scheme/usrsBannedForBlog.schema';
 import { BanUnBanDto } from './bloggerUsers.conroller';
+import { BlogBan, BlogBanDocument } from '../blogs/shemas/blogBan.schema';
 
 @Injectable()
 export class BloggerService {
@@ -21,6 +22,8 @@ export class BloggerService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(UsersBannedForBLog.name)
     private usersBannedForBLogModel: Model<UsersBannedForBLog>,
+    @InjectModel(BlogBan.name)
+    private blogBanModel: Model<BlogBanDocument>,
   ) {}
 
   // async findBlogs(queryFilters: IQueryFilter) {
@@ -30,7 +33,7 @@ export class BloggerService {
   //     const blogResponse = await this.blogModel
   //       .find({ name: { $regex: searchNameTerm, $options: 'i' } })
   //       .sort({ [sortBy]: sortDirection })
-  //       .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+  //       .skip((pageNumber - 1) * pageSize)
   //       .limit(pageSize)
   //       .lean();
   //     const blogs = blogResponse.map((blog) => new ReturnBlogModel(blog));
@@ -59,7 +62,7 @@ export class BloggerService {
           bloggerId,
         })
         .sort({ [sortBy]: sortDirection })
-        .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+        .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
         .lean();
       const blogs = blogResponse.map((blog) => new ReturnBlogModel(blog));
@@ -100,6 +103,9 @@ export class BloggerService {
   }
 
   async findBlogById(id: string) {
+    const isBLogBanned = await this.blogBanModel.findOne({ blogId: id });
+    if (isBLogBanned?.isBanned) throw new NotFoundException();
+
     const blogResponse = await this.blogModel.findOne({ id });
     if (blogResponse) {
       return new ReturnBlogModel(blogResponse);
@@ -146,6 +152,8 @@ export class BloggerService {
   ) {
     const blog = await this.blogModel.findOne({ id: blogId }).lean();
     if (blog?.bloggerId !== ownerUserId) throw new ForbiddenException();
+    const user = await this.userModel.findOne({ id: banUserId });
+    if (!user) throw new NotFoundException();
 
     const banInfo = await this.usersBannedForBLogModel.findOne({
       userId: banUserId,
@@ -189,7 +197,7 @@ export class BloggerService {
         userLogin: { $regex: searchLoginTerm, $options: 'i' },
       })
       .sort({ [sortBy]: sortDirection })
-      .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+      .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .lean();
 

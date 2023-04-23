@@ -16,6 +16,7 @@ import {
 import { IsBlogExistValidator } from '../decorators/isBlogExist/isBlogExist.validator';
 import { Blog, BlogSchema } from '../blogs/shemas/blogs.schema';
 import { BanInfo, BanInfoSchema } from '../users/shemas/banInfo.schema';
+import { BlogBan, BlogBanSchema } from '../blogs/shemas/blogBan.schema';
 
 const schemas = [
   { name: Post.name, schema: PostSchema },
@@ -26,6 +27,7 @@ const schemas = [
   { name: User.name, schema: UserSchema },
   { name: Blog.name, schema: BlogSchema },
   { name: BanInfo.name, schema: BanInfoSchema },
+  { name: BlogBan.name, schema: BlogBanSchema },
 ];
 
 @Module({

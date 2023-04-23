@@ -104,7 +104,7 @@ export class UsersService {
           ],
         })
         .sort({ [sortBy]: sortDirection })
-        .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+        .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
         .lean();
     }
@@ -120,7 +120,7 @@ export class UsersService {
           id: { $nin: [...bannedUsersIds] },
         })
         .sort({ [sortBy]: sortDirection })
-        .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+        .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
         .lean();
     }
@@ -134,7 +134,7 @@ export class UsersService {
           id: [...bannedUsersIds],
         })
         .sort({ [sortBy]: sortDirection })
-        .skip(pageNumber > 1 ? (pageNumber - 1) * pageSize : 0)
+        .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
         .lean();
     }
