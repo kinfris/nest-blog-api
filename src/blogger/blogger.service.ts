@@ -256,7 +256,7 @@ export class BloggerService {
       pageSize,
       commentsCount,
     );
-    const returnCommentEntities = Promise.all(
+    const returnCommentEntities = await Promise.all(
       comments.map(async (comment) => {
         const postInfo = await this.postsModel.findOne({ id: comment.postId });
         return {

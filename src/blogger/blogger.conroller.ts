@@ -56,6 +56,19 @@ export class BloggersController {
   ) {}
 
   @UseGuards(JwtAuthGuard)
+  @Get('comments')
+  findAllUserBlogsComments(
+    @Query() queryDto: QueryType,
+    @CurrentUser() currentUser,
+  ) {
+    const queryFilters = new QueryFilterModel(queryDto);
+    return this.bloggerService.findAllUserBlogsComments(
+      queryFilters,
+      currentUser?.userId,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
   getBlogs(@Query() queryDto: QueryType, @CurrentUser() currentUser) {
     const queryFilters = new QueryFilterModel(queryDto);
@@ -170,18 +183,5 @@ export class BloggersController {
   ) {
     await this.postsService.deletePost(id, currentUser.userId, blogId);
     return;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('/comments')
-  async findAllUserBlogsComments(
-    @Query() queryDto: QueryType,
-    @CurrentUser() currentUser,
-  ) {
-    const queryFilters = new QueryFilterModel(queryDto);
-    return this.bloggerService.findAllUserBlogsComments(
-      queryFilters,
-      currentUser?.userId,
-    );
   }
 }
