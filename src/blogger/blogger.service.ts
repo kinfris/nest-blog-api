@@ -16,6 +16,10 @@ import { BanUnBanDto } from './bloggerUsers.conroller';
 import { BlogBan, BlogBanDocument } from '../blogs/shemas/blogBan.schema';
 import { Comment, CommentDocument } from '../comments/schemas/comments.schema';
 import { Post, PostDocument } from '../posts/schemas/posts.schema';
+import {
+  CommentLikes,
+  CommentLikesDocument,
+} from '../comments/schemas/commentLikes.schema';
 
 @Injectable()
 export class BloggerService {
@@ -28,6 +32,8 @@ export class BloggerService {
     private blogBanModel: Model<BlogBanDocument>,
     @InjectModel(Post.name) private postsModel: Model<PostDocument>,
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
+    @InjectModel(CommentLikes.name)
+    private commentLikesModel: Model<CommentLikesDocument>,
   ) {}
 
   // async findBlogs(queryFilters: IQueryFilter) {
@@ -259,14 +265,23 @@ export class BloggerService {
     const returnCommentEntities = await Promise.all(
       comments.map(async (comment) => {
         const postInfo = await this.postsModel.findOne({ id: comment.postId });
+        const likeInfo = await this.commentLikesModel.findOne({
+          commentId: comment.id,
+        });
         return {
           id: comment.id,
           content: comment.content,
+          createdAt: comment.createdAt,
           commentatorInfo: {
             userId: comment.userId,
             userLogin: comment.userLogin,
           },
-          createdAt: comment.createdAt,
+          likesInfo: {
+            likesCount: comment.likesCount,
+            dislikesCount: comment.dislikesCount,
+            myStatus:
+              likeInfo?.userId === userId ? likeInfo.likeStatus : 'None',
+          },
           postInfo: {
             id: postInfo.id,
             title: postInfo.title,

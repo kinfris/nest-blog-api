@@ -13,6 +13,10 @@ import {
 import { BlogBan, BlogBanSchema } from '../blogs/shemas/blogBan.schema';
 import { Comment, CommentSchema } from '../comments/schemas/comments.schema';
 import { Post, PostSchema } from '../posts/schemas/posts.schema';
+import {
+  CommentLikes,
+  CommentLikesSchema,
+} from '../comments/schemas/commentLikes.schema';
 
 const schemas = [
   { name: Blog.name, schema: BlogSchema },
@@ -21,6 +25,7 @@ const schemas = [
   { name: BlogBan.name, schema: BlogBanSchema },
   { name: Post.name, schema: PostSchema },
   { name: Comment.name, schema: CommentSchema },
+  { name: CommentLikes.name, schema: CommentLikesSchema },
 ];
 
 @Module({
