@@ -11,12 +11,16 @@ import {
   UsersBannedForBLogSchema,
 } from './scheme/usrsBannedForBlog.schema';
 import { BlogBan, BlogBanSchema } from '../blogs/shemas/blogBan.schema';
+import { Comment, CommentSchema } from '../comments/schemas/comments.schema';
+import { Post, PostSchema } from '../posts/schemas/posts.schema';
 
 const schemas = [
   { name: Blog.name, schema: BlogSchema },
   { name: User.name, schema: UserSchema },
   { name: UsersBannedForBLog.name, schema: UsersBannedForBLogSchema },
   { name: BlogBan.name, schema: BlogBanSchema },
+  { name: Post.name, schema: PostSchema },
+  { name: Comment.name, schema: CommentSchema },
 ];
 
 @Module({

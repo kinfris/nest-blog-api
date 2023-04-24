@@ -14,6 +14,8 @@ import { User, UserDocument } from '../users/shemas/users.schema';
 import { UsersBannedForBLog } from './scheme/usrsBannedForBlog.schema';
 import { BanUnBanDto } from './bloggerUsers.conroller';
 import { BlogBan, BlogBanDocument } from '../blogs/shemas/blogBan.schema';
+import { Comment, CommentDocument } from '../comments/schemas/comments.schema';
+import { Post, PostDocument } from '../posts/schemas/posts.schema';
 
 @Injectable()
 export class BloggerService {
@@ -24,6 +26,8 @@ export class BloggerService {
     private usersBannedForBLogModel: Model<UsersBannedForBLog>,
     @InjectModel(BlogBan.name)
     private blogBanModel: Model<BlogBanDocument>,
+    @InjectModel(Post.name) private postsModel: Model<PostDocument>,
+    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
   ) {}
 
   // async findBlogs(queryFilters: IQueryFilter) {
@@ -178,7 +182,7 @@ export class BloggerService {
       const banInfoEntity = {
         blogId,
         userId: banUserId,
-        userLogin: userInfo.login,
+        login: userInfo.login,
         isBanned: true,
         banReason,
         banDate: new Date(),
@@ -195,7 +199,7 @@ export class BloggerService {
     const bannedUsersForBlog = await this.usersBannedForBLogModel
       .find({
         blogId,
-        userLogin: { $regex: searchLoginTerm, $options: 'i' },
+        login: { $regex: searchLoginTerm, $options: 'i' },
       })
       .sort({ [sortBy]: sortDirection })
       .skip((pageNumber - 1) * pageSize)
@@ -205,7 +209,7 @@ export class BloggerService {
     const bannedUsersCount = await this.usersBannedForBLogModel
       .find({
         blogId,
-        userLogin: { $regex: searchLoginTerm, $options: 'i' },
+        login: { $regex: searchLoginTerm, $options: 'i' },
       })
       .countDocuments();
 
@@ -218,7 +222,7 @@ export class BloggerService {
       ...paginationInfo,
       items: bannedUsersForBlog.map((m) => ({
         id: m.userId,
-        login: m.userLogin,
+        login: m.login,
         banInfo: {
           isBanned: m.isBanned,
           banDate: m.banDate,
@@ -226,5 +230,53 @@ export class BloggerService {
         },
       })),
     };
+  }
+
+  async findAllUserBlogsComments(
+    queryFilters: QueryFilterModel,
+    userId: string,
+  ) {
+    const { pageNumber, pageSize, sortBy, sortDirection } = queryFilters;
+    const blogs = await this.blogModel.find({ bloggerId: userId }).lean();
+    const blogsId = blogs.map((blog) => blog.id);
+    const blogPosts = await this.postsModel.find({ blogId: blogsId }).lean();
+    const blogPostsId = blogPosts.map((post) => post.id);
+    const comments = await this.commentModel
+      .find({ postId: blogPostsId })
+      .sort({ [sortBy]: sortDirection })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .lean();
+    const commentsCount = await this.commentModel
+      .find({ postId: blogPostsId })
+      .countDocuments();
+
+    const paginationInfo = new PaginationModel(
+      pageNumber,
+      pageSize,
+      commentsCount,
+    );
+    const returnCommentEntities = Promise.all(
+      comments.map(async (comment) => {
+        const postInfo = await this.postsModel.findOne({ id: comment.postId });
+        return {
+          id: comment.id,
+          content: comment.content,
+          commentatorInfo: {
+            userId: comment.userId,
+            userLogin: comment.userLogin,
+          },
+          createdAt: comment.createdAt,
+          postInfo: {
+            id: postInfo.id,
+            title: postInfo.title,
+            blogId: postInfo.blogId,
+            blogName: postInfo.blogName,
+          },
+        };
+      }),
+    );
+
+    return { ...paginationInfo, items: returnCommentEntities };
   }
 }

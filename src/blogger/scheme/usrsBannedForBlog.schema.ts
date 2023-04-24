@@ -12,7 +12,7 @@ export class UsersBannedForBLog {
   userId: string;
 
   @Prop({ required: true })
-  userLogin: string;
+  login: string;
 
   @Prop({ required: true })
   isBanned: boolean;

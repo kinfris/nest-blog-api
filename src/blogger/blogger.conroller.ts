@@ -171,4 +171,17 @@ export class BloggersController {
     await this.postsService.deletePost(id, currentUser.userId, blogId);
     return;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/comments')
+  async findAllUserBlogsComments(
+    @Query() queryDto: QueryType,
+    @CurrentUser() currentUser,
+  ) {
+    const queryFilters = new QueryFilterModel(queryDto);
+    return this.bloggerService.findAllUserBlogsComments(
+      queryFilters,
+      currentUser?.userId,
+    );
+  }
 }
